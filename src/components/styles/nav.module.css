@@ -1,0 +1,62 @@
+.nav {
+  position: sticky;
+  top: 18px;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+  pointer-events: none;
+}
+
+.list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  padding: 5px;
+  border: 1px solid rgba(141, 190, 255, 0.32);
+  border-radius: 999px;
+  background: rgba(7, 12, 26, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: auto;
+  /* Lit by the route line arriving from the cosmic journey above. */
+  box-shadow:
+    0 0 34px rgba(141, 190, 255, 0.16),
+    0 -10px 28px rgba(141, 190, 255, 0.12),
+    inset 0 0 18px rgba(141, 190, 255, 0.05);
+}
+
+.link {
+  display: inline-block;
+  padding: 7px 15px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--muted);
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.link:hover {
+  color: var(--text);
+}
+
+.link[aria-current='true'] {
+  color: var(--text);
+  background: rgba(141, 190, 255, 0.14);
+}
+
+@media (max-width: 720px) {
+  .nav {
+    top: 10px;
+  }
+
+  .link {
+    padding: 6px 10px;
+    font-size: 0.64rem;
+  }
+}

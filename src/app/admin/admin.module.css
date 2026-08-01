@@ -1,0 +1,243 @@
+.page {
+  min-height: 100vh;
+  padding: 48px clamp(16px, 4vw, 48px) 120px;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 32px;
+}
+
+.title {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 500;
+  font-size: 2.2rem;
+}
+
+.subtitle {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  max-width: 640px;
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  background: linear-gradient(var(--bg) 82%, transparent);
+}
+
+.saveButton {
+  padding: 11px 26px;
+  border: none;
+  border-radius: 999px;
+  background: var(--text);
+  color: #0a0f1e;
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.ghostButton {
+  padding: 10px 20px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.status {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.statusOk {
+  color: #8fe3b0;
+}
+
+.statusError {
+  color: #ff9d9d;
+}
+
+.panel {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.panel > summary {
+  padding: 16px 20px;
+  cursor: pointer;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.25rem;
+  list-style: none;
+}
+
+.panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.panel > summary::before {
+  content: '▸ ';
+  color: var(--route);
+}
+
+.panel[open] > summary::before {
+  content: '▾ ';
+}
+
+.panelBody {
+  padding: 4px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.field input[type='text'],
+.field input[type='number'],
+.field textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: rgba(3, 7, 17, 0.6);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.92rem;
+}
+
+.field textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+
+.checkboxField {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.itemCard {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(3, 7, 17, 0.35);
+}
+
+.itemHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.itemTitle {
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.removeButton {
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 157, 157, 0.4);
+  border-radius: 999px;
+  background: transparent;
+  color: #ff9d9d;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.addButton {
+  align-self: flex-start;
+  padding: 8px 18px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.addButton:hover,
+.removeButton:hover {
+  color: var(--text);
+}
+
+.nested {
+  border-left: 2px solid var(--border);
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Login gate */
+
+.gate {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.gateCard {
+  width: min(400px, 100%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gateCard input {
+  padding: 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: rgba(3, 7, 17, 0.6);
+  color: var(--text);
+  font: inherit;
+}

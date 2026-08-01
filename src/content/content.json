@@ -1,0 +1,190 @@
+{
+  "identity": {
+    "name": "Maxime Ronceray",
+    "fullName": "Maxime Ronceray",
+    "role": "Astrophysics · Data Science",
+    "headline": "PhD student at CEA",
+    "intro": "I work on [PLACEHOLDER].",
+    "email": "hello@example.com",
+    "github": "https://github.com/your-github-username",
+    "cvHref": "/cv-placeholder.pdf",
+    "siteUrl": "https://your-portfolio.example.com"
+  },
+  "redshiftEpochStart": "2024-09-01",
+  "milestones": [
+    {
+      "id": "m1-m2-machine-learning",
+      "title": "M1 & M2 Machine Learning",
+      "shortTitle": "M1–M2 ML",
+      "date": "2024-09-01",
+      "dateLabel": "Sep 2024 – Jul 2026",
+      "description": "Master's degree (M1 & M2) in machine learning — [PLACEHOLDER].",
+      "href": ""
+    },
+    {
+      "id": "anomaly-detection",
+      "title": "Anomaly detection project",
+      "shortTitle": "Anomalies",
+      "date": "2025-09-01",
+      "dateLabel": "Sep 2025 – Jan 2026",
+      "description": "Research project on anomaly detection — [PLACEHOLDER].",
+      "href": ""
+    },
+    {
+      "id": "cea-internship",
+      "title": "Internship at CEA",
+      "shortTitle": "CEA",
+      "date": "2026-03-01",
+      "dateLabel": "Mar 2026 – Sep 2026",
+      "description": "Research internship at CEA — [PLACEHOLDER].",
+      "href": "https://www.cea.fr/"
+    },
+    {
+      "id": "phd",
+      "title": "PhD",
+      "shortTitle": "PhD",
+      "date": "2026-11-01",
+      "dateLabel": "Nov 2026 – 2029",
+      "description": "PhD at CEA — [PLACEHOLDER].",
+      "href": ""
+    }
+  ],
+  "papers": [
+    {
+      "id": "paper-1",
+      "title": "[PLACEHOLDER] A probabilistic neural deblender for LSST-depth galaxy blends",
+      "authors": "M. Ronceray, B. Collaborator, C. Advisor",
+      "venue": "Astronomy & Astrophysics (submitted)",
+      "year": 2026,
+      "abstract": "[PLACEHOLDER] We present a probabilistic deep-learning framework that separates overlapping galaxies in deep survey imaging while propagating pixel-level uncertainty into shape measurements.",
+      "links": [
+        {
+          "label": "arXiv",
+          "href": "https://arxiv.org/"
+        },
+        {
+          "label": "PDF",
+          "href": "https://arxiv.org/"
+        },
+        {
+          "label": "Code",
+          "href": "https://github.com/your-github-username"
+        }
+      ],
+      "featured": true
+    },
+    {
+      "id": "paper-2",
+      "title": "[PLACEHOLDER] Second paper title",
+      "authors": "M. Ronceray, D. Colleague",
+      "venue": "MNRAS",
+      "year": 2026,
+      "abstract": "[PLACEHOLDER] Short abstract excerpt for the second paper.",
+      "links": [
+        {
+          "label": "arXiv",
+          "href": "https://arxiv.org/"
+        },
+        {
+          "label": "DOI",
+          "href": "https://doi.org/"
+        }
+      ],
+      "featured": false
+    }
+  ],
+  "posters": [
+    {
+      "id": "poster-1",
+      "title": "[PLACEHOLDER] Poster title",
+      "event": "[PLACEHOLDER] Conference name",
+      "year": 2026,
+      "href": "#"
+    },
+    {
+      "id": "poster-2",
+      "title": "[PLACEHOLDER] Second poster title",
+      "event": "[PLACEHOLDER] Workshop name",
+      "year": 2025,
+      "href": "#"
+    }
+  ],
+  "slides": [
+    {
+      "id": "slides-1",
+      "title": "[PLACEHOLDER] Talk title",
+      "event": "[PLACEHOLDER] Journal club",
+      "date": "Jan 2026",
+      "href": "#"
+    },
+    {
+      "id": "slides-2",
+      "title": "[PLACEHOLDER] Second talk title",
+      "event": "[PLACEHOLDER] Seminar",
+      "date": "Oct 2025",
+      "href": "#"
+    }
+  ],
+  "reports": [
+    {
+      "id": "report-1",
+      "title": "[PLACEHOLDER] Internship report",
+      "context": "CEA, M2 internship",
+      "year": 2026,
+      "description": "[PLACEHOLDER] One-sentence description of the report.",
+      "href": "#"
+    },
+    {
+      "id": "report-2",
+      "title": "[PLACEHOLDER] Technical note",
+      "context": "Project note",
+      "year": 2025,
+      "description": "[PLACEHOLDER] One-sentence description of the note.",
+      "href": "#"
+    }
+  ],
+  "about": {
+    "position": "PhD student at CEA (placeholder affiliation)",
+    "bio": [
+      "[PLACEHOLDER] First biography paragraph — who you are and what you work on.",
+      "[PLACEHOLDER] Second biography paragraph — your research focus in more detail."
+    ],
+    "interests": [
+      "Machine learning",
+      "Anomaly detection",
+      "Astrophysics",
+      "[PLACEHOLDER]"
+    ],
+    "skills": [
+      "Python · PyTorch",
+      "Statistics & inference",
+      "[PLACEHOLDER]"
+    ]
+  },
+  "externalLinks": [
+    {
+      "id": "scholar",
+      "label": "Google Scholar",
+      "href": "https://scholar.google.com/",
+      "description": "Citations & profile"
+    },
+    {
+      "id": "orcid",
+      "label": "ORCID",
+      "href": "https://orcid.org/",
+      "description": "0000-0000-0000-0000"
+    },
+    {
+      "id": "arxiv",
+      "label": "arXiv",
+      "href": "https://arxiv.org/",
+      "description": "Preprints"
+    },
+    {
+      "id": "linkedin",
+      "label": "LinkedIn",
+      "href": "https://www.linkedin.com/",
+      "description": "Professional profile"
+    }
+  ]
+}

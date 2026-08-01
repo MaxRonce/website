@@ -1,0 +1,11 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "overrides": [
+    {
+      "files": ["src/components/three/**/*.tsx", "src/components/CosmicCanvas.tsx"],
+      "rules": {
+        "react/no-unknown-property": "off"
+      }
+    }
+  ]
+}
