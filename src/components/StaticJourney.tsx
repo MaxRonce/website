@@ -47,7 +47,6 @@ export function StaticJourney({
                 milestone={milestone}
                 index={index}
                 epochStart={epochStart}
-                idPrefix="static"
                 galaxySize={180}
               />
             </li>

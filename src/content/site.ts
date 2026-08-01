@@ -30,9 +30,6 @@ export type SlideDeck = SiteContent['slides'][number];
 export type Report = SiteContent['reports'][number];
 export type ExternalLink = SiteContent['externalLinks'][number];
 
-export const redshiftTooltip =
-  'A poetic visual mapping: elapsed time converted through the low-redshift approximation z ≈ H0 · Δt (H0 = 70 km/s/Mpc). One year ≈ Δz of 7.2 × 10⁻¹¹. Not a measured cosmological redshift.';
-
 /** 3D layout of one journey stage — code-owned, not editable from /admin. */
 type MilestoneLayout = {
   /** Position of the galaxy in the 3D scene. */

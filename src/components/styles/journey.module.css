@@ -306,7 +306,6 @@
 /* ── Redshift chip & tooltip ───────────────────────────────────────────── */
 
 .redshiftChip {
-  position: relative;
   display: inline-flex;
   align-items: baseline;
   gap: 1px;
@@ -318,39 +317,10 @@
   letter-spacing: 0.06em;
   text-transform: none;
   color: var(--accent);
-  cursor: help;
-  pointer-events: auto;
 }
 
 .redshiftChip sup {
   font-size: 0.72em;
-}
-
-.redshiftTooltip {
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 240px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: rgba(7, 12, 26, 0.94);
-  color: var(--muted);
-  font-size: 0.72rem;
-  letter-spacing: 0.01em;
-  text-transform: none;
-  line-height: 1.5;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.2s ease;
-  z-index: 20;
-}
-
-.redshiftChip:hover .redshiftTooltip,
-.redshiftChip:focus-visible .redshiftTooltip {
-  opacity: 1;
-  visibility: visible;
 }
 
 /* ── Mobile journey ────────────────────────────────────────────────────── */

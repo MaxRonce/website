@@ -72,11 +72,7 @@ export function MilestoneOverlay({
               <h2 className={styles.labelTitle}>{milestone.title}</h2>
               <p className={styles.labelDate}>
                 <time dateTime={milestone.date}>{milestone.dateLabel}</time>
-                <RedshiftChip
-                  date={milestone.date}
-                  epochStart={epochStart}
-                  id={`overlay-${milestone.id}`}
-                />
+                <RedshiftChip date={milestone.date} epochStart={epochStart} />
               </p>
               <p className={styles.labelDescription}>{milestone.description}</p>
               {milestone.href ? (

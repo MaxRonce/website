@@ -11,13 +11,11 @@ export function MilestoneCard({
   milestone,
   index,
   epochStart,
-  idPrefix,
   galaxySize = 220,
 }: {
   milestone: Milestone;
   index: number;
   epochStart: string;
-  idPrefix: string;
   galaxySize?: number;
 }) {
   return (
@@ -30,11 +28,7 @@ export function MilestoneCard({
         <h3 className={styles.cardTitle}>{milestone.title}</h3>
         <p className={styles.labelDate}>
           <time dateTime={milestone.date}>{milestone.dateLabel}</time>
-          <RedshiftChip
-            date={milestone.date}
-            epochStart={epochStart}
-            id={`${idPrefix}-${milestone.id}`}
-          />
+          <RedshiftChip date={milestone.date} epochStart={epochStart} />
         </p>
         <p className={styles.cardDescription}>{milestone.description}</p>
         {milestone.href ? (

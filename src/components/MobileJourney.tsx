@@ -104,7 +104,6 @@ export function MobileJourney({
                 milestone={milestone}
                 index={index}
                 epochStart={epochStart}
-                idPrefix="mobile"
                 galaxySize={200}
               />
             </li>
