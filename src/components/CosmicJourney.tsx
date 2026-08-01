@@ -5,6 +5,19 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 
+function detectWebGL(): boolean {
+  try {
+    const canvas = document.createElement('canvas');
+    return Boolean(
+      canvas.getContext('webgl2') ??
+        canvas.getContext('webgl') ??
+        canvas.getContext('experimental-webgl'),
+    );
+  } catch {
+    return false;
+  }
+}
+
 import styles from '@/components/styles/journey.module.css';
 import type { Milestone } from '@/content/site';
 import type { IdentityContent } from '@/content/types';
@@ -41,11 +54,18 @@ export type CosmicJourneyProps = {
  */
 export default function CosmicJourney(props: CosmicJourneyProps) {
   const flags = useMediaFlags();
+  const [webglAvailable, setWebglAvailable] = useState<boolean | null>(null);
 
-  if (!flags.mounted) {
+  useEffect(() => {
+    setWebglAvailable(detectWebGL());
+  }, []);
+
+  if (!flags.mounted || webglAvailable === null) {
     return <JourneyShellFallback {...props} />;
   }
-  if (flags.isMobile) {
+  // Without WebGL (hardware acceleration off, old GPU…) the vertical journey
+  // still shows real galaxies — they are painted with the 2D canvas API.
+  if (flags.isMobile || !webglAvailable) {
     return (
       <MobileJourney
         identity={props.identity}
