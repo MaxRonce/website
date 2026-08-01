@@ -63,6 +63,9 @@ const LABELS: Record<string, string> = {
 };
 
 const TEXTAREA_KEYS = new Set(['intro', 'description', 'abstract']);
+/** Link fields that get a "Téléverser…" button (PDF de poster, CV, etc.). */
+const UPLOAD_KEYS = new Set(['href', 'cvHref']);
+const UPLOAD_ACCEPT = '.pdf,.png,.jpg,.jpeg,.webp,.svg';
 /** Sections whose item count is locked (the 3D journey has exactly 4 stages). */
 const FIXED_LENGTH_KEYS = new Set(['milestones']);
 const SECTION_ORDER = [
@@ -233,6 +236,37 @@ export default function AdminPage() {
     }
   }
 
+  async function uploadFile(file: File): Promise<string | null> {
+    setStatus({ kind: 'saving' });
+    try {
+      const data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '');
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({ name: file.name, data }),
+      });
+      const json = (await response.json().catch(() => ({}))) as {
+        path?: string;
+        message?: string;
+        error?: string;
+      };
+      if (response.ok && json.path) {
+        setStatus({ kind: 'saved', message: json.message ?? 'Fichier téléversé.' });
+        return json.path;
+      }
+      setStatus({ kind: 'error', message: json.error ?? 'Téléversement impossible.' });
+      return null;
+    } catch {
+      setStatus({ kind: 'error', message: 'Téléversement impossible.' });
+      return null;
+    }
+  }
+
   function download(): void {
     if (!content) return;
     const blob = new Blob([`${JSON.stringify(content, null, 2)}\n`], {
@@ -321,6 +355,7 @@ export default function AdminPage() {
                 update={update}
                 addItem={addItem}
                 removeItem={removeItem}
+                upload={uploadFile}
               />
             </div>
           </details>
@@ -339,10 +374,54 @@ type EditorProps = {
   update: (path: PathSegment[], value: JsonValue) => void;
   addItem: (path: PathSegment[]) => void;
   removeItem: (path: PathSegment[], index: number) => void;
+  upload: (file: File) => Promise<string | null>;
 };
 
-function ValueEditor({ keyName, value, path, update, addItem, removeItem }: EditorProps): ReactNode {
+function ValueEditor({
+  keyName,
+  value,
+  path,
+  update,
+  addItem,
+  removeItem,
+  upload,
+}: EditorProps): ReactNode {
   if (typeof value === 'string') {
+    // Link fields accept either a pasted URL or an uploaded file (poster PDF,
+    // CV…) — the upload fills the field with the file's public path.
+    if (UPLOAD_KEYS.has(keyName)) {
+      return (
+        <div className={styles.field}>
+          <span className={styles.fieldLabel}>{labelFor(keyName)}</span>
+          <div className={styles.fileRow}>
+            <input
+              type="text"
+              value={value}
+              onChange={(event) => update(path, event.target.value)}
+              placeholder="URL ou fichier téléversé"
+              aria-label={labelFor(keyName)}
+            />
+            <label className={styles.uploadButton}>
+              Téléverser…
+              <input
+                type="file"
+                accept={UPLOAD_ACCEPT}
+                hidden
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = '';
+                  if (!file) return;
+                  void upload(file).then((publicPath) => {
+                    if (publicPath) update(path, publicPath);
+                  });
+                }}
+              />
+            </label>
+          </div>
+        </div>
+      );
+    }
+
     const multiline = TEXTAREA_KEYS.has(keyName) || value.length > 90;
     return (
       <label className={styles.field}>
@@ -431,6 +510,7 @@ function ValueEditor({ keyName, value, path, update, addItem, removeItem }: Edit
               update={update}
               addItem={addItem}
               removeItem={removeItem}
+              upload={upload}
             />
           </div>
         ))}
@@ -455,6 +535,7 @@ function ValueEditor({ keyName, value, path, update, addItem, removeItem }: Edit
             update={update}
             addItem={addItem}
             removeItem={removeItem}
+            upload={upload}
           />
         ))}
       </div>

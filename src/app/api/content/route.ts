@@ -1,92 +1,15 @@
-import { timingSafeEqual, createHash } from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
 
 import fallbackContent from '@/content/content.json';
+import { adminUnauthorizedMessage, passwordMatches } from '@/lib/adminAuth';
+import { commitFileToGitHub, gitHubConfigured } from '@/lib/githubCommit';
 
 export const dynamic = 'force-dynamic';
 
 const CONTENT_PATH = path.join(process.cwd(), 'src', 'content', 'content.json');
 const GITHUB_FILE_PATH = 'src/content/content.json';
-
-/**
- * Constant-time password check. Both sides are hashed first so the comparison
- * length never depends on the submitted value.
- */
-function passwordMatches(submitted: string | null): boolean {
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected || !submitted) return false;
-  const a = createHash('sha256').update(submitted).digest();
-  const b = createHash('sha256').update(expected).digest();
-  return timingSafeEqual(a, b);
-}
-
-function unauthorized(): NextResponse {
-  const configured = Boolean(process.env.ADMIN_PASSWORD);
-  return NextResponse.json(
-    {
-      error: configured
-        ? 'Mot de passe incorrect.'
-        : "L'éditeur est désactivé : aucune variable ADMIN_PASSWORD n'est configurée (voir README).",
-    },
-    { status: 401 },
-  );
-}
-
-/**
- * Repository to commit to: GITHUB_REPO if set, otherwise the repo Vercel
- * deployed from (system env vars VERCEL_GIT_REPO_OWNER / _SLUG).
- */
-function resolveGitHubRepo(): string | undefined {
-  if (process.env.GITHUB_REPO) return process.env.GITHUB_REPO;
-  const owner = process.env.VERCEL_GIT_REPO_OWNER;
-  const slug = process.env.VERCEL_GIT_REPO_SLUG;
-  return owner && slug ? `${owner}/${slug}` : undefined;
-}
-
-/**
- * Commits content.json to the GitHub repository. Used on read-only hosts
- * (Vercel): the push triggers an automatic redeploy, so the site updates a
- * couple of minutes after saving.
- */
-async function saveToGitHub(serialized: string): Promise<void> {
-  const repo = resolveGitHubRepo();
-  const token = process.env.GITHUB_TOKEN;
-  const branch = process.env.GITHUB_BRANCH ?? process.env.VERCEL_GIT_COMMIT_REF ?? 'main';
-  const apiUrl = `https://api.github.com/repos/${repo}/contents/${GITHUB_FILE_PATH}`;
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    Accept: 'application/vnd.github+json',
-    'User-Agent': 'cosmic-portfolio-admin',
-    'Content-Type': 'application/json',
-  };
-
-  let sha: string | undefined;
-  const current = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, {
-    headers,
-    cache: 'no-store',
-  });
-  if (current.ok) {
-    const data = (await current.json()) as { sha?: string };
-    sha = data.sha;
-  }
-
-  const response = await fetch(apiUrl, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify({
-      message: 'content: update via /admin editor',
-      content: Buffer.from(serialized, 'utf8').toString('base64'),
-      branch,
-      ...(sha ? { sha } : {}),
-    }),
-  });
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`GitHub a répondu ${response.status}: ${detail.slice(0, 200)}`);
-  }
-}
 
 /** The content itself is public (it is rendered on the site), so GET is open. */
 export async function GET() {
@@ -100,7 +23,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   if (!passwordMatches(request.headers.get('x-admin-password'))) {
-    return unauthorized();
+    return NextResponse.json({ error: adminUnauthorizedMessage() }, { status: 401 });
   }
 
   let body: unknown;
@@ -128,9 +51,13 @@ export async function POST(request: Request) {
   const serialized = `${JSON.stringify(body, null, 2)}\n`;
 
   // Preferred on Vercel: commit to GitHub → automatic redeploy.
-  if (resolveGitHubRepo() && process.env.GITHUB_TOKEN) {
+  if (gitHubConfigured()) {
     try {
-      await saveToGitHub(serialized);
+      await commitFileToGitHub(
+        GITHUB_FILE_PATH,
+        Buffer.from(serialized, 'utf8').toString('base64'),
+        'content: update via /admin editor',
+      );
       return NextResponse.json({
         ok: true,
         mode: 'github',
@@ -155,7 +82,7 @@ export async function POST(request: Request) {
     const message = error instanceof Error ? error.message : 'erreur inconnue';
     return NextResponse.json(
       {
-        error: `Écriture impossible (${message}). Sur Vercel, configurez GITHUB_REPO et GITHUB_TOKEN pour enregistrer via GitHub (voir README), ou téléchargez le JSON.`,
+        error: `Écriture impossible (${message}). Sur Vercel, configurez GITHUB_TOKEN pour enregistrer via GitHub (voir README), ou téléchargez le JSON.`,
       },
       { status: 500 },
     );

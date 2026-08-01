@@ -109,6 +109,14 @@ The editor is protected by the `ADMIN_PASSWORD` environment variable (see
 variable in your host's dashboard in production). Without it the editor is disabled.
 The API compares passwords in constant time and never stores them.
 
+### Uploading files (poster PDFs, CV, slides…)
+
+Every link field in /admin has a **Téléverser…** button: pick a file (PDF, PNG, JPG,
+WEBP or SVG, 15 MB max) and the field is filled automatically with its public path.
+Files land in `public/uploads/` — written to disk locally / on a VPS, committed to
+GitHub on Vercel (note: Vercel's request limit caps uploads there at roughly 3 MB;
+bigger files can be added to `public/uploads/` in the repo by hand).
+
 ### How saving works, per host
 
 - **Local dev / VPS** — the JSON file is written to disk; the site picks it up within
