@@ -14,7 +14,11 @@
 }
 
 .canvasWrap {
-  position: absolute;
+  /* Fixed to the viewport: the cosmic scene IS the page background. It keeps
+     rendering behind the top of the portfolio (so there is no visible seam at
+     the end of the journey) and is faded out by scroll once the sections take
+     over. */
+  position: fixed;
   inset: 0;
 }
 
@@ -197,7 +201,7 @@
 .labelInner {
   position: relative;
   width: max-content;
-  max-width: 300px;
+  max-width: min(300px, 30vw);
 }
 
 /* Label to the right of its galaxy: connector runs back toward it. */

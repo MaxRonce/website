@@ -35,14 +35,25 @@ function unauthorized(): NextResponse {
 }
 
 /**
+ * Repository to commit to: GITHUB_REPO if set, otherwise the repo Vercel
+ * deployed from (system env vars VERCEL_GIT_REPO_OWNER / _SLUG).
+ */
+function resolveGitHubRepo(): string | undefined {
+  if (process.env.GITHUB_REPO) return process.env.GITHUB_REPO;
+  const owner = process.env.VERCEL_GIT_REPO_OWNER;
+  const slug = process.env.VERCEL_GIT_REPO_SLUG;
+  return owner && slug ? `${owner}/${slug}` : undefined;
+}
+
+/**
  * Commits content.json to the GitHub repository. Used on read-only hosts
  * (Vercel): the push triggers an automatic redeploy, so the site updates a
  * couple of minutes after saving.
  */
 async function saveToGitHub(serialized: string): Promise<void> {
-  const repo = process.env.GITHUB_REPO;
+  const repo = resolveGitHubRepo();
   const token = process.env.GITHUB_TOKEN;
-  const branch = process.env.GITHUB_BRANCH ?? 'main';
+  const branch = process.env.GITHUB_BRANCH ?? process.env.VERCEL_GIT_COMMIT_REF ?? 'main';
   const apiUrl = `https://api.github.com/repos/${repo}/contents/${GITHUB_FILE_PATH}`;
   const headers = {
     Authorization: `Bearer ${token}`,
@@ -117,7 +128,7 @@ export async function POST(request: Request) {
   const serialized = `${JSON.stringify(body, null, 2)}\n`;
 
   // Preferred on Vercel: commit to GitHub → automatic redeploy.
-  if (process.env.GITHUB_REPO && process.env.GITHUB_TOKEN) {
+  if (resolveGitHubRepo() && process.env.GITHUB_TOKEN) {
     try {
       await saveToGitHub(serialized);
       return NextResponse.json({

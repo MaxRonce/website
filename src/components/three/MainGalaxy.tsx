@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 import type { Milestone } from '@/content/site';
+import { milestones } from '@/content/site';
 import { createGalaxyTexture, mulberry32 } from '@/lib/galaxyPainter';
 import { journey, milestoneFocus } from '@/lib/journeyStore';
 
@@ -61,8 +62,18 @@ export function MainGalaxy({ milestone, index }: { milestone: Milestone; index: 
     currentScale.current = THREE.MathUtils.damp(currentScale.current, target, 4, delta);
     wrapper.scale.setScalar(currentScale.current);
 
-    material.opacity = 0.45 + 0.55 * focus;
-    haloMaterial.opacity = 0.12 + 0.35 * focus;
+    // Once the portfolio takes over, galaxies dissolve much faster than the
+    // rest of the scene (the star field lingers as the shared background).
+    // The last galaxy — still centred when the sections arrive — already
+    // starts dimming over the final stretch of the pinned journey, then
+    // vanishes almost instantly on the first scroll into the portfolio.
+    const isLast = index === milestones.length - 1;
+    let releaseFade = THREE.MathUtils.clamp(1 - journey.release * (isLast ? 8 : 2.5), 0, 1);
+    if (isLast) {
+      releaseFade *= 1 - 0.5 * THREE.MathUtils.smoothstep(journey.progress, 0.9, 1);
+    }
+    material.opacity = (0.45 + 0.55 * focus) * releaseFade;
+    haloMaterial.opacity = (0.12 + 0.35 * focus) * releaseFade;
   });
 
   return (

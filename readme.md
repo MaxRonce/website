@@ -113,9 +113,11 @@ The API compares passwords in constant time and never stores them.
 
 - **Local dev / VPS** — the JSON file is written to disk; the site picks it up within
   ~10 seconds (`revalidate = 10` on the home page).
-- **Vercel** (read-only filesystem) — set `GITHUB_REPO` (e.g. `user/repo`),
-  `GITHUB_TOKEN` (fine-grained token with *Contents: read & write* on that repo only)
-  and optionally `GITHUB_BRANCH` in the Vercel project settings. Saving then commits
+- **Vercel** (read-only filesystem) — set `GITHUB_TOKEN` (fine-grained token with
+  *Contents: read & write* on the site's repo only) in the Vercel project settings.
+  The target repo and branch are auto-detected from Vercel's system variables
+  (`VERCEL_GIT_REPO_OWNER`/`_SLUG`, `VERCEL_GIT_COMMIT_REF`); set `GITHUB_REPO`
+  (`user/repo`) and/or `GITHUB_BRANCH` only to override. Saving then commits
   `content.json` to GitHub, which triggers an automatic redeploy — changes go live in
   1–2 minutes. There is also a **Télécharger le JSON** button as a manual fallback.
 

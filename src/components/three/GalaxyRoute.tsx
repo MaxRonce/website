@@ -68,13 +68,17 @@ export function GalaxyRoute() {
 
   const { geometry, material, anchors } = useMemo(() => {
     const first = milestones[0].worldPosition;
-    const last = milestones[milestones.length - 1].worldPosition;
+    // The exit dives straight down through the final camera target's vertical
+    // column: points directly below the look-at target project onto the exact
+    // horizontal centre of the screen (whatever the aspect ratio), so the 3D
+    // line leaves the viewport dead-centre and vertical — perfectly aligned
+    // with the DOM route-continuation line that leads to the section index.
+    const finalTarget = milestones[milestones.length - 1].cameraTarget;
     const points = [
       new THREE.Vector3(first[0] - 1.4, first[1] - 1.2, first[2] + 0.6),
       ...milestones.map((m) => new THREE.Vector3(...m.worldPosition)),
-      // Exit dives far below the final framing so the line visibly runs off
-      // the bottom edge of the viewport, toward the portfolio below.
-      new THREE.Vector3(last[0] + 0.5, last[1] - 8.5, last[2] - 3.0),
+      new THREE.Vector3(finalTarget[0], finalTarget[1] - 3.5, finalTarget[2]),
+      new THREE.Vector3(finalTarget[0], finalTarget[1] - 14, finalTarget[2]),
     ];
     const curve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.5);
     const tube = new THREE.TubeGeometry(curve, 380, 0.05, 10, false);
@@ -137,6 +141,9 @@ export function GalaxyRoute() {
 
     shader.uniforms.uReveal.value = reveal.current;
     shader.uniforms.uFaint.value = Math.min(1, reveal.current + 0.16);
+    // Like the galaxies, the route dissolves quickly once the portfolio
+    // scrolls over the scene — only the star field lingers.
+    shader.uniforms.uOpacity.value = 0.85 * THREE.MathUtils.clamp(1 - journey.release * 4, 0, 1);
     shader.uniforms.uPulse.value = (state.clock.elapsedTime * 0.11) % 1 > reveal.current
       ? -1
       : (state.clock.elapsedTime * 0.11) % 1;

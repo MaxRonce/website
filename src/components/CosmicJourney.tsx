@@ -14,7 +14,6 @@ import { useMediaFlags } from '@/lib/useMediaFlags';
 import { HeroContent } from '@/components/HeroContent';
 import { MilestoneOverlay } from '@/components/MilestoneOverlay';
 import { MobileJourney } from '@/components/MobileJourney';
-import { StaticJourney } from '@/components/StaticJourney';
 
 const CosmicCanvas = dynamic(() => import('@/components/CosmicCanvas'), {
   ssr: false,
@@ -30,9 +29,12 @@ export type CosmicJourneyProps = {
 /**
  * Entry point of the cosmic journey. Chooses the right experience:
  *
- * - desktop / tablet with motion allowed → pinned 400vh WebGL journey;
- * - touch / narrow viewport → simplified vertical sequence, no hijacking;
- * - prefers-reduced-motion or no WebGL → static overview of the milestones.
+ * - desktop / tablet → pinned 400vh WebGL journey;
+ * - touch / narrow viewport → simplified vertical sequence, no hijacking.
+ *
+ * The full experience is shown regardless of the OS "reduced motion"
+ * preference (explicit product decision — many Windows machines have
+ * animation effects switched off without the user knowing).
  *
  * Before hydration completes we render the hero plus an sr-only milestone
  * list, so all journey content exists as crawlable, accessible HTML.
@@ -42,15 +44,6 @@ export default function CosmicJourney(props: CosmicJourneyProps) {
 
   if (!flags.mounted) {
     return <JourneyShellFallback {...props} />;
-  }
-  if (flags.reducedMotion) {
-    return (
-      <StaticJourney
-        identity={props.identity}
-        milestones={props.milestones}
-        epochStart={props.epochStart}
-      />
-    );
   }
   if (flags.isMobile) {
     return (
@@ -135,20 +128,41 @@ function DesktopJourney({
       timeline
         .to('[data-scroll-hint]', { opacity: 0, duration: 0.05 }, 0.02)
         .to('[data-hero-block]', { opacity: 0.78, y: -34, duration: 0.2 }, 0.05)
-        .to('[data-hero-block]', { opacity: 0, y: -80, duration: 0.15 }, 0.78)
-        .to('[data-canvas-wrap]', { opacity: 0.45, duration: 0.12 }, 0.88);
+        .to('[data-hero-block]', { opacity: 0, y: -80, duration: 0.15 }, 0.78);
+
+      // The fixed canvas stays as the shared background past the end of the
+      // journey — no seam — and dissolves while scrolling into the portfolio.
+      gsap.fromTo(
+        '[data-canvas-wrap]',
+        { autoAlpha: 1 },
+        {
+          autoAlpha: 0,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: wrapper,
+            start: 'bottom 92%',
+            end: 'bottom -30%',
+            scrub: true,
+            // The galaxies read this to dissolve faster than the star field.
+            onUpdate: (self) => {
+              journey.release = self.progress;
+            },
+          },
+        },
+      );
     }, wrapper);
 
     return () => {
       ctx.revert();
       journey.progress = 0;
       journey.stage = 0;
+      journey.release = 0;
     };
   }, [stageCount]);
 
   const fieldCount = flags.isTablet ? 1800 : 3400;
   const lensing = !flags.coarsePointer;
-  const lensingRadiusPx = flags.isTablet ? 230 : 330;
+  const lensingRadiusPx = flags.isTablet ? 690 : 990;
 
   return (
     <section className={styles.journey} ref={wrapperRef} aria-label="Research journey">

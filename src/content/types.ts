@@ -18,8 +18,13 @@ export type GalaxyLook = {
   inclination: number;
   /** Position angle of the disc on the sky, radians. */
   positionAngle: number;
+  /** Bright centre colour (cream / gold). */
   core: RGB;
+  /** Mid-disc colour (the dominant hue of the galaxy). */
   arm: RGB;
+  /** Deep outskirt colour (dark navy / violet rim masses). */
+  rim: RGB;
+  /** Accent colour for glowing knots and sparkles. */
   knot: RGB;
   /** Fraction of painted sources that become bright HII-like knots. */
   knotFraction: number;

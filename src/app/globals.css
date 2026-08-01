@@ -119,25 +119,13 @@ svg {
   inset: 0;
   z-index: -1;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse 60% 40% at 85% 0%, rgba(30, 42, 78, 0.35), transparent 70%),
-    radial-gradient(ellipse 50% 35% at 10% 60%, rgba(38, 30, 68, 0.28), transparent 70%);
+  /* No tint of its own: the fixed cosmic canvas shows through untouched, so
+     the journey and the portfolio share one strictly identical background. */
   pointer-events: none;
 }
 
 .portfolio-backdrop svg {
   display: block;
-}
-
-/* The blue route escaping the cosmic canvas, carried on to the section index. */
-.route-continuation {
-  width: 2px;
-  height: 150px;
-  margin: -40px auto 20px;
-  border-radius: 2px;
-  background: linear-gradient(rgba(141, 190, 255, 0.95), rgba(141, 190, 255, 0.2));
-  box-shadow: 0 0 14px rgba(141, 190, 255, 0.55);
-  transform-origin: top;
 }
 
 .site-footer {

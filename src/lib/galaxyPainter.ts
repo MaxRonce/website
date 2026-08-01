@@ -27,15 +27,12 @@ function mixRgb(a: RGB, b: RGB, t: number): RGB {
 }
 
 /**
- * Paints a procedural spiral galaxy — "light painting" style.
- *
- * Instead of a pointillist cloud, each logarithmic arm is drawn as a smooth,
- * tapering ribbon of light in three passes (wide ambient glow → mid band →
- * thin bright ridge), with a gentle sine wobble for an organic flow. Colour
- * runs core → arm → violet edge along the arm. On top: a fainter offset
- * wisp per arm, sparse fine stars hugging the arms, a handful of glowing
- * accent knots, a dust lane carved along the ridge's inner edge, and an
- * elongated two-scale core with a lens-flare streak lying in the disc plane.
+ * Paints a procedural galaxy in a dense, painterly "nebula" style, after the
+ * user's references: a fully filled disc of saturated colour — blazing
+ * cream/gold core, hot mid-tones, deep navy/violet rim masses — built from
+ * hundreds of soft, tangentially stretched cloud blobs following the spiral
+ * flow, an irregular blotchy silhouette, dust darkening, and a heavy speckle
+ * of thousands of tiny stars over the whole disc.
  */
 export function paintGalaxy(
   ctx: CanvasRenderingContext2D,
@@ -43,21 +40,59 @@ export function paintGalaxy(
   look: GalaxyLook,
 ): void {
   const rand = mulberry32(look.seed);
+  const gauss = () => rand() + rand() + rand() - 1.5;
   const c = size / 2;
-  const maxR = c * 0.94;
+  const maxR = c * 0.88;
   const detailed = size >= 512;
   const px = size / 512;
 
   const armStep = (Math.PI * 2) / look.arms;
-  const swirlAt = (radius: number) => look.tightness * Math.log(1 + radius / (maxR * 0.09));
-  const edgeColour = mixRgb(look.arm, [190, 160, 255], 0.45);
-  const armColourAt = (t: number): RGB =>
-    t < 0.5 ? mixRgb(look.core, look.arm, t * 2) : mixRgb(look.arm, edgeColour, (t - 0.5) * 2);
-
+  const swirlAt = (radius: number) => look.tightness * Math.log(1 + radius / (maxR * 0.1));
   const armPhases: number[] = [];
   for (let arm = 0; arm < look.arms; arm += 1) {
-    armPhases.push(arm * armStep + (rand() - 0.5) * 0.2);
+    armPhases.push(arm * armStep + (rand() - 0.5) * 0.25);
   }
+
+  /** Colour across the disc: core → mid → rim. */
+  const discColourAt = (frac: number): RGB => {
+    const t = Math.min(1.15, frac);
+    if (t < 0.3) return mixRgb(look.core, look.arm, t / 0.3);
+    return mixRgb(look.arm, look.rim, Math.min(1, (t - 0.3) / 0.65));
+  };
+
+  /** A point on the spiral flow at a given radial fraction. */
+  const armSample = (frac: number): { x: number; y: number; theta: number } => {
+    const arm = Math.floor(rand() * look.arms);
+    const radius = frac * maxR;
+    // Tight enough that individual arms stay legible with 4–5 of them.
+    const spread = 0.15 + 0.36 * frac;
+    const theta = swirlAt(radius) + armPhases[arm] + gauss() * spread;
+    return { x: Math.cos(theta) * radius, y: Math.sin(theta) * radius, theta };
+  };
+
+  /** Soft elliptical cloud, stretched along the local flow direction. */
+  const blob = (
+    x: number,
+    y: number,
+    radius: number,
+    angle: number,
+    stretch: number,
+    colour: RGB,
+    alpha: number,
+  ) => {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.scale(stretch, 1);
+    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+    gradient.addColorStop(0, rgba(colour, alpha));
+    gradient.addColorStop(1, rgba(colour, 0));
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  };
 
   ctx.clearRect(0, 0, size, size);
   ctx.save();
@@ -65,175 +100,157 @@ export function paintGalaxy(
   ctx.rotate(look.positionAngle);
   ctx.scale(1, look.inclination);
 
-  // Ambient halo.
-  const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, maxR);
-  halo.addColorStop(0, rgba(look.arm, 0.15));
-  halo.addColorStop(0.5, rgba(look.arm, 0.06));
-  halo.addColorStop(1, rgba(look.arm, 0));
-  ctx.fillStyle = halo;
-  ctx.fillRect(-c, -c, size, size);
-
-  // Flowing arms: three ribbon passes, wide → narrow.
-  const passes = [
-    { width: 0.085, alpha: 0.05 },
-    { width: 0.042, alpha: 0.095 },
-    { width: 0.016, alpha: 0.16 },
-  ];
-  const steps = detailed ? 300 : 140;
-  for (let arm = 0; arm < look.arms; arm += 1) {
-    const phase = armPhases[arm];
-    for (const pass of passes) {
-      for (let i = 0; i < steps; i += 1) {
-        const t = i / steps;
-        const radius = (0.05 + 0.95 * t) * maxR;
-        const theta = swirlAt(radius) + phase + Math.sin(t * 7.3 + look.seed) * 0.045;
-        const x = Math.cos(theta) * radius;
-        const y = Math.sin(theta) * radius;
-        const blobR = maxR * pass.width * (0.35 + 0.95 * t);
-        const alpha = pass.alpha * (1 - t * 0.72);
-        const colour = armColourAt(t);
-        const glow = ctx.createRadialGradient(x, y, 0, x, y, blobR);
-        glow.addColorStop(0, rgba(colour, alpha));
-        glow.addColorStop(1, rgba(colour, 0));
-        ctx.fillStyle = glow;
-        ctx.beginPath();
-        ctx.arc(x, y, blobR, 0, Math.PI * 2);
-        ctx.fill();
-      }
+  // 1 — deep rim wash: broad dark-navy masses defining the outskirts,
+  // extending past maxR for an irregular, blotchy silhouette.
+  const rimCount = detailed ? 170 : 75;
+  for (let i = 0; i < rimCount; i += 1) {
+    const frac = 0.45 + rand() * 0.62;
+    const p = armSample(frac);
+    blob(
+      p.x,
+      p.y,
+      maxR * (0.09 + rand() * 0.1),
+      p.theta + Math.PI / 2,
+      1.6 + rand() * 1.1,
+      mixRgb(look.rim, look.arm, rand() * 0.3),
+      0.055,
+    );
+  }
+  // Detached outer clumps breaking the ellipse edge.
+  const clumpCount = detailed ? 13 : 6;
+  for (let i = 0; i < clumpCount; i += 1) {
+    const frac = 0.85 + rand() * 0.35;
+    const p = armSample(frac);
+    for (let j = 0; j < 3; j += 1) {
+      blob(
+        p.x + gauss() * maxR * 0.06,
+        p.y + gauss() * maxR * 0.06,
+        maxR * (0.05 + rand() * 0.05),
+        p.theta + Math.PI / 2,
+        1.4 + rand(),
+        look.rim,
+        0.06,
+      );
     }
+  }
 
-    // A fainter offset wisp trailing each arm.
-    const wispSteps = Math.floor(steps / 2);
-    for (let i = 0; i < wispSteps; i += 1) {
-      const t = 0.25 + (0.75 * i) / wispSteps;
-      const radius = (0.05 + 0.95 * t) * maxR;
-      const theta = swirlAt(radius) + phase + 0.17 - t * 0.06;
-      const x = Math.cos(theta) * radius;
-      const y = Math.sin(theta) * radius;
-      const blobR = maxR * 0.024 * (0.4 + t);
-      const colour = armColourAt(Math.min(1, t * 1.15));
-      const glow = ctx.createRadialGradient(x, y, 0, x, y, blobR);
-      glow.addColorStop(0, rgba(colour, 0.05 * (1 - t * 0.6)));
-      glow.addColorStop(1, rgba(colour, 0));
-      ctx.fillStyle = glow;
+  // 2 — mid-disc clouds: the dominant hue, filling the disc.
+  const midCount = detailed ? 270 : 115;
+  for (let i = 0; i < midCount; i += 1) {
+    const frac = 0.14 + rand() * 0.68;
+    const p = armSample(frac);
+    blob(
+      p.x,
+      p.y,
+      maxR * (0.05 + rand() * 0.075),
+      p.theta + Math.PI / 2,
+      1.5 + rand() * 1.2,
+      discColourAt(frac + gauss() * 0.08),
+      0.065,
+    );
+  }
+
+  // 3 — warm inner clouds swirling into the core.
+  const warmCount = detailed ? 140 : 60;
+  for (let i = 0; i < warmCount; i += 1) {
+    const frac = 0.03 + rand() * 0.32;
+    const p = armSample(frac);
+    blob(
+      p.x,
+      p.y,
+      maxR * (0.035 + rand() * 0.055),
+      p.theta + Math.PI / 2,
+      1.4 + rand(),
+      mixRgb(look.core, look.arm, Math.min(1, frac * 2.6)),
+      0.08,
+    );
+  }
+
+  // 4 — dust darkening: deep shadows carving depth into the bright disc.
+  const dust: RGB = [8, 10, 28];
+  const dustCount = detailed ? 150 : 60;
+  for (let i = 0; i < dustCount; i += 1) {
+    const frac = 0.35 + rand() * 0.7;
+    const p = armSample(frac);
+    blob(
+      p.x,
+      p.y,
+      maxR * (0.05 + rand() * 0.09),
+      p.theta + Math.PI / 2,
+      1.8 + rand() * 1.2,
+      dust,
+      0.1,
+    );
+  }
+
+  // 5 — the signature dense star speckle, everywhere on the disc.
+  const starCount = detailed ? 5200 : 1900;
+  for (let i = 0; i < starCount; i += 1) {
+    const frac = Math.min(1.12, 0.02 + 1.05 * Math.sqrt(rand()));
+    const p = armSample(frac);
+    const local = discColourAt(frac);
+    const colour = mixRgb(local, [255, 255, 255], 0.55 + rand() * 0.35);
+    const alpha = (0.22 + rand() * 0.6) * (1 - Math.min(1, frac) * 0.35);
+    const r = (0.28 + rand() * 0.75) * px;
+    ctx.fillStyle = rgba(colour, alpha);
+    if (r < 0.7) {
+      ctx.fillRect(p.x, p.y, r * 2, r * 2);
+    } else {
       ctx.beginPath();
-      ctx.arc(x, y, blobR, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
       ctx.fill();
     }
   }
-
-  // Fine stars hugging the arms.
-  const starCount = detailed ? 950 : 380;
-  for (let i = 0; i < starCount; i += 1) {
-    const arm = i % look.arms;
-    const frac = 0.08 + 0.92 * Math.sqrt(rand());
-    const radius = frac * maxR;
-    const jitter = (rand() + rand() - 1) * 0.11;
-    const theta = swirlAt(radius) + armPhases[arm] + jitter;
-    const x = Math.cos(theta) * radius;
-    const y = Math.sin(theta) * radius;
-    const colour = mixRgb(armColourAt(frac), [255, 255, 255], 0.4);
-    const alpha = (0.18 + rand() * 0.55) * (1 - frac * 0.45);
-    ctx.fillStyle = rgba(colour, alpha);
+  // Brighter sparkles.
+  const sparkCount = detailed ? 46 : 20;
+  for (let i = 0; i < sparkCount; i += 1) {
+    const frac = 0.05 + rand() * 0.9;
+    const p = armSample(frac);
+    ctx.fillStyle = rgba([255, 255, 255], 0.75 + rand() * 0.25);
     ctx.beginPath();
-    ctx.arc(x, y, (0.3 + rand() * 0.8) * px, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, (0.9 + rand() * 0.8) * px, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // Glowing accent knots.
-  const knotCount = Math.max(4, Math.round((detailed ? 340 : 170) * look.knotFraction));
+  // 6 — glowing accent knots.
+  const knotCount = Math.max(4, Math.round((detailed ? 280 : 130) * look.knotFraction));
   for (let i = 0; i < knotCount; i += 1) {
-    const arm = i % look.arms;
-    const frac = 0.3 + rand() * 0.6;
-    const radius = frac * maxR;
-    const theta = swirlAt(radius) + armPhases[arm] + (rand() - 0.5) * 0.06;
-    const x = Math.cos(theta) * radius;
-    const y = Math.sin(theta) * radius;
-    const r = (5 + rand() * 9) * px;
-    const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
-    glow.addColorStop(0, rgba(look.knot, 0.4));
-    glow.addColorStop(0.4, rgba(look.knot, 0.14));
+    const frac = 0.25 + rand() * 0.6;
+    const p = armSample(frac);
+    const r = (5 + rand() * 8) * px;
+    const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+    glow.addColorStop(0, rgba(look.knot, 0.35));
     glow.addColorStop(1, rgba(look.knot, 0));
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = rgba(mixRgb(look.knot, [255, 255, 255], 0.5), 0.75);
-    ctx.beginPath();
-    ctx.arc(x, y, 1.1 * px, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // Dust lane carved along the inner edge of each ridge.
-  ctx.globalCompositeOperation = 'destination-out';
-  const dustCount = detailed ? 650 : 260;
-  for (let i = 0; i < dustCount; i += 1) {
-    const arm = i % look.arms;
-    const frac = 0.16 + rand() * 0.6;
-    const radius = frac * maxR;
-    const theta = swirlAt(radius) + armPhases[arm] - 0.075 + (rand() - 0.5) * 0.05;
-    const x = Math.cos(theta) * radius;
-    const y = Math.sin(theta) * radius;
-    ctx.fillStyle = `rgba(0, 0, 0, ${0.04 + rand() * 0.07})`;
-    ctx.beginPath();
-    ctx.arc(x, y, (1 + rand() * 2.4) * px, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalCompositeOperation = 'source-over';
-
-  // Elongated warm core.
+  // 7 — blazing core: broad saturated glow + white-hot centre, elongated.
   ctx.save();
-  ctx.rotate(0.3);
-  ctx.scale(1.35, 1);
-  const warmSpread = ctx.createRadialGradient(0, 0, 0, 0, 0, maxR * 0.3);
-  warmSpread.addColorStop(0, rgba(look.core, 0.55));
-  warmSpread.addColorStop(0.45, rgba(look.core, 0.2));
-  warmSpread.addColorStop(1, rgba(look.core, 0));
-  ctx.fillStyle = warmSpread;
+  ctx.rotate(0.35);
+  ctx.scale(1.3, 1);
+  const coreGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, maxR * 0.4);
+  coreGlow.addColorStop(0, rgba(look.core, 0.85));
+  coreGlow.addColorStop(0.35, rgba(mixRgb(look.core, look.arm, 0.45), 0.35));
+  coreGlow.addColorStop(1, rgba(look.arm, 0));
+  ctx.fillStyle = coreGlow;
   ctx.beginPath();
-  ctx.arc(0, 0, maxR * 0.3, 0, Math.PI * 2);
+  ctx.arc(0, 0, maxR * 0.4, 0, Math.PI * 2);
   ctx.fill();
-  ctx.restore();
 
-  // Hot centre.
-  const hotCore = ctx.createRadialGradient(0, 0, 0, 0, 0, maxR * 0.1);
-  hotCore.addColorStop(0, rgba(mixRgb(look.core, [255, 255, 255], 0.85), 0.98));
-  hotCore.addColorStop(0.5, rgba(mixRgb(look.core, [255, 255, 255], 0.35), 0.45));
+  const hotCore = ctx.createRadialGradient(0, 0, 0, 0, 0, maxR * 0.13);
+  hotCore.addColorStop(0, rgba(mixRgb(look.core, [255, 255, 255], 0.9), 1));
+  hotCore.addColorStop(0.55, rgba(mixRgb(look.core, [255, 255, 255], 0.4), 0.55));
   hotCore.addColorStop(1, rgba(look.core, 0));
   ctx.fillStyle = hotCore;
   ctx.beginPath();
-  ctx.arc(0, 0, maxR * 0.1, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Lens-flare streak lying in the disc plane.
-  ctx.save();
-  ctx.scale(1, 0.1);
-  const streak = ctx.createRadialGradient(0, 0, 0, 0, 0, maxR * 0.6);
-  streak.addColorStop(0, rgba(mixRgb(look.core, [255, 255, 255], 0.6), 0.28));
-  streak.addColorStop(1, rgba(look.core, 0));
-  ctx.fillStyle = streak;
-  ctx.beginPath();
-  ctx.arc(0, 0, maxR * 0.6, 0, Math.PI * 2);
+  ctx.arc(0, 0, maxR * 0.13, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
   ctx.restore();
-
-  // A few sharp foreground stars, unsquashed.
-  const foreground = detailed ? 8 : 4;
-  for (let i = 0; i < foreground; i += 1) {
-    const x = rand() * size;
-    const y = rand() * size;
-    const r = (0.5 + rand()) * px;
-    const star = ctx.createRadialGradient(x, y, 0, x, y, r * 4);
-    star.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-    star.addColorStop(0.3, 'rgba(220, 230, 255, 0.22)');
-    star.addColorStop(1, 'rgba(220, 230, 255, 0)');
-    ctx.fillStyle = star;
-    ctx.beginPath();
-    ctx.arc(x, y, r * 4, 0, Math.PI * 2);
-    ctx.fill();
-  }
 }
 
 /** Renders a galaxy into a THREE.CanvasTexture. Client-side only. */

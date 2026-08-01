@@ -35,7 +35,7 @@ export function MilestoneOverlay({
     let raf = 0;
     const tick = () => {
       // Labels sit beside their galaxy, outside the bright disc.
-      const offset = Math.min(Math.max(window.innerWidth * 0.24, 220), 420);
+      const offset = Math.min(Math.max(window.innerWidth * 0.22, 180), 400);
       for (let i = 0; i < sideList.length; i += 1) {
         const el = itemRefs.current[i];
         const anchor = journey.screen[i];

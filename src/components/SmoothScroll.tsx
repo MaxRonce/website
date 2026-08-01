@@ -9,15 +9,10 @@ import { scrollBus } from '@/lib/scrollBus';
 
 /**
  * Mounts Lenis smooth scrolling and wires it into GSAP's ticker and
- * ScrollTrigger. Renders nothing. Disabled entirely for users who prefer
- * reduced motion — native scrolling remains untouched for them.
+ * ScrollTrigger. Renders nothing.
  */
 export function SmoothScroll() {
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return;
-    }
-
     gsap.registerPlugin(ScrollTrigger);
 
     const lenis = new Lenis({

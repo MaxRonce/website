@@ -20,6 +20,8 @@ export type JourneyState = {
   progress: number;
   /** progress × (milestones - 1); fractional stage index, 0 → 3. */
   stage: number;
+  /** 0 during the journey → 1 while the portfolio scrolls over the canvas. */
+  release: number;
   /** Pointer position in canvas UV space (origin bottom-left), for the lens. */
   pointerUv: { x: number; y: number };
   /** Projected screen-space anchors for the milestone labels. */
@@ -29,6 +31,7 @@ export type JourneyState = {
 export const journey: JourneyState = {
   progress: 0,
   stage: 0,
+  release: 0,
   pointerUv: { x: 0.5, y: 0.5 },
   screen: milestones.map(() => ({ x: -9999, y: -9999, visible: false, focus: 0 })),
 };

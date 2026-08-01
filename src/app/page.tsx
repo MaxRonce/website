@@ -34,7 +34,6 @@ export default async function Home() {
       <main id="main" className="portfolio">
         <PortfolioBackdrop />
         <PortfolioEffects />
-        <div className="route-continuation" data-route-continuation aria-hidden="true" />
         <SectionNavigation />
         <PapersSection papers={content.papers} />
         <PostersSection posters={content.posters} />
@@ -47,9 +46,6 @@ export default async function Home() {
       <footer className="site-footer">
         <p>
           {content.identity.name} · {content.identity.role}
-        </p>
-        <p className="site-footer-note">
-          Content editable at <code>/admin</code> or in <code>src/content/content.json</code>.
         </p>
       </footer>
     </>
