@@ -12,11 +12,11 @@ import { MilestoneCard } from '@/components/MilestoneCard';
 export function StaticJourney({
   identity,
   milestones,
-  epochStart,
+  redshiftRef,
 }: {
   identity: IdentityContent;
   milestones: Milestone[];
-  epochStart: string;
+  redshiftRef: string;
 }) {
   return (
     <section className={styles.staticJourney} aria-label="Research journey">
@@ -46,7 +46,7 @@ export function StaticJourney({
               <MilestoneCard
                 milestone={milestone}
                 index={index}
-                epochStart={epochStart}
+                redshiftRef={redshiftRef}
                 galaxySize={180}
               />
             </li>

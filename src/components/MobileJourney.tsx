@@ -18,11 +18,11 @@ import { MilestoneCard } from '@/components/MilestoneCard';
 export function MobileJourney({
   identity,
   milestones,
-  epochStart,
+  redshiftRef,
 }: {
   identity: IdentityContent;
   milestones: Milestone[];
-  epochStart: string;
+  redshiftRef: string;
 }) {
   const listRef = useRef<HTMLDivElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
@@ -103,7 +103,7 @@ export function MobileJourney({
               <MilestoneCard
                 milestone={milestone}
                 index={index}
-                epochStart={epochStart}
+                redshiftRef={redshiftRef}
                 galaxySize={200}
               />
             </li>

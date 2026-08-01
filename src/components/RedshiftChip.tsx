@@ -3,10 +3,12 @@ import { formatRedshift, redshiftBetweenDates } from '@/lib/redshift';
 
 /**
  * Small "z ≈ 1.8 × 10⁻¹¹" chip: elapsed time poetically mapped onto the
- * low-redshift approximation.
+ * low-redshift approximation. Like real redshifts, older events sit "farther
+ * away": z grows with lookback time from the most recent milestone
+ * (`redshiftRef`), which itself sits at z ≈ 0.
  */
-export function RedshiftChip({ date, epochStart }: { date: string; epochStart: string }) {
-  const z = redshiftBetweenDates(epochStart, date);
+export function RedshiftChip({ date, redshiftRef }: { date: string; redshiftRef: string }) {
+  const z = redshiftBetweenDates(date, redshiftRef);
   const parts = formatRedshift(z);
 
   return (

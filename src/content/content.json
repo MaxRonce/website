@@ -10,7 +10,6 @@
     "cvHref": "/cv-placeholder.pdf",
     "siteUrl": "https://your-portfolio.example.com"
   },
-  "redshiftEpochStart": "2024-09-01",
   "milestones": [
     {
       "id": "m1-m2-machine-learning",

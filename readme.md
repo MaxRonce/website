@@ -137,7 +137,9 @@ bigger files can be added to `public/uploads/` in the repo by hand).
   galaxy looks) is code-owned in [`src/content/site.ts`](src/content/site.ts).
 - `papers`, `posters`, `slides`, `reports`, `about`, `externalLinks` — the portfolio
   sections, with add/remove supported in the editor.
-- `redshiftEpochStart` — start of the interval for the poetic redshift scale.
+
+The poetic redshift chips need no configuration: the most recent milestone is the
+"observer" (z ≈ 0) and older events sit at higher z, like real lookback time.
 
 Static assets to replace in `public/`: `cv-placeholder.pdf` (your CV — keep the filename
 or update `identity.cvHref`) and `og.svg` (ideally swap for a 1200×630 PNG and update

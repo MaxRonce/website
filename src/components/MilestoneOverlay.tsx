@@ -19,11 +19,11 @@ import { RedshiftChip } from '@/components/RedshiftChip';
  */
 export function MilestoneOverlay({
   milestones,
-  epochStart,
+  redshiftRef,
   activeIndex,
 }: {
   milestones: Milestone[];
-  epochStart: string;
+  redshiftRef: string;
   activeIndex: number;
 }) {
   const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
@@ -72,7 +72,7 @@ export function MilestoneOverlay({
               <h2 className={styles.labelTitle}>{milestone.title}</h2>
               <p className={styles.labelDate}>
                 <time dateTime={milestone.date}>{milestone.dateLabel}</time>
-                <RedshiftChip date={milestone.date} epochStart={epochStart} />
+                <RedshiftChip date={milestone.date} redshiftRef={redshiftRef} />
               </p>
               <p className={styles.labelDescription}>{milestone.description}</p>
               {milestone.href ? (

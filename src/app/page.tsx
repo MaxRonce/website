@@ -22,13 +22,19 @@ export const revalidate = 10;
 export default async function Home() {
   const content = await getContent();
   const milestones = buildMilestones(content.milestones);
+  // Poetic redshift reference: the most recent milestone is "the observer"
+  // (z ≈ 0); older events sit at higher z, like real lookback time.
+  const redshiftRef = content.milestones.reduce(
+    (latest, milestone) => (milestone.date > latest ? milestone.date : latest),
+    content.milestones[0]?.date ?? '',
+  );
 
   return (
     <>
       <CosmicJourney
         identity={content.identity}
         milestones={milestones}
-        epochStart={content.redshiftEpochStart}
+        redshiftRef={redshiftRef}
       />
 
       <main id="main" className="portfolio">

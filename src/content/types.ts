@@ -107,7 +107,6 @@ export type ExternalLinkContent = {
 
 export type SiteContent = {
   identity: IdentityContent;
-  redshiftEpochStart: string;
   milestones: MilestoneContent[];
   papers: PaperContent[];
   posters: PosterContent[];

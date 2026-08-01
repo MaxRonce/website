@@ -5,19 +5,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 
-function detectWebGL(): boolean {
-  try {
-    const canvas = document.createElement('canvas');
-    return Boolean(
-      canvas.getContext('webgl2') ??
-        canvas.getContext('webgl') ??
-        canvas.getContext('experimental-webgl'),
-    );
-  } catch {
-    return false;
-  }
-}
-
 import styles from '@/components/styles/journey.module.css';
 import type { Milestone } from '@/content/site';
 import type { IdentityContent } from '@/content/types';
@@ -33,10 +20,23 @@ const CosmicCanvas = dynamic(() => import('@/components/CosmicCanvas'), {
   loading: () => <div className="cosmic-css-fallback" aria-hidden="true" />,
 });
 
+function detectWebGL(): boolean {
+  try {
+    const canvas = document.createElement('canvas');
+    return Boolean(
+      canvas.getContext('webgl2') ??
+        canvas.getContext('webgl') ??
+        canvas.getContext('experimental-webgl'),
+    );
+  } catch {
+    return false;
+  }
+}
+
 export type CosmicJourneyProps = {
   identity: IdentityContent;
   milestones: Milestone[];
-  epochStart: string;
+  redshiftRef: string;
 };
 
 /**
@@ -70,7 +70,7 @@ export default function CosmicJourney(props: CosmicJourneyProps) {
       <MobileJourney
         identity={props.identity}
         milestones={props.milestones}
-        epochStart={props.epochStart}
+        redshiftRef={props.redshiftRef}
       />
     );
   }
@@ -106,7 +106,7 @@ function SrMilestoneList({ milestones }: { milestones: Milestone[] }) {
 function DesktopJourney({
   identity,
   milestones,
-  epochStart,
+  redshiftRef,
   flags,
 }: CosmicJourneyProps & { flags: MediaFlags }) {
   const wrapperRef = useRef<HTMLElement>(null);
@@ -198,7 +198,7 @@ function DesktopJourney({
         <HeroContent identity={identity} />
         <MilestoneOverlay
           milestones={milestones}
-          epochStart={epochStart}
+          redshiftRef={redshiftRef}
           activeIndex={activeIndex}
         />
         <SrMilestoneList milestones={milestones} />

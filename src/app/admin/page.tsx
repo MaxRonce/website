@@ -32,7 +32,6 @@ const LABELS: Record<string, string> = {
   github: 'Lien GitHub',
   cvHref: 'Fichier CV (chemin ou URL)',
   siteUrl: 'URL du site en ligne',
-  redshiftEpochStart: "Début de l'échelle redshift (AAAA-MM-JJ)",
   milestones: 'Jalons du voyage cosmique (4 galaxies)',
   title: 'Titre',
   shortTitle: 'Titre court',
@@ -70,7 +69,6 @@ const UPLOAD_ACCEPT = '.pdf,.png,.jpg,.jpeg,.webp,.svg';
 const FIXED_LENGTH_KEYS = new Set(['milestones']);
 const SECTION_ORDER = [
   'identity',
-  'redshiftEpochStart',
   'milestones',
   'papers',
   'posters',
