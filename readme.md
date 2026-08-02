@@ -44,7 +44,8 @@ Requires Node 18.17+ (developed on Node 24).
 ├── .eslintrc.json                 # next/core-web-vitals (+ R3F prop override)
 ├── public/
 │   ├── og.svg                     # Open Graph placeholder — replace with a PNG
-│   └── cv-placeholder.pdf         # replace with your real CV
+│   ├── cv-placeholder.pdf         # original placeholder
+│   └── files/                     # portfolio PDFs, PPTX and current CV
 └── src/
     ├── app/
     │   ├── layout.tsx             # fonts, metadata, OG, JSON-LD, skip link
@@ -141,9 +142,9 @@ bigger files can be added to `public/uploads/` in the repo by hand).
 The poetic redshift chips need no configuration: the most recent milestone is the
 "observer" (z ≈ 0) and older events sit at higher z, like real lookback time.
 
-Static assets to replace in `public/`: `cv-placeholder.pdf` (your CV — keep the filename
-or update `identity.cvHref`) and `og.svg` (ideally swap for a 1200×630 PNG and update
-`openGraph.images` in `src/app/layout.tsx`).
+The current CV and research documents are served from `public/files/`; their links are
+defined in `content.json`. The remaining visual placeholder is `og.svg` (ideally swap it
+for a 1200×630 PNG and update `openGraph.images` in `src/app/layout.tsx`).
 
 ## Adjusting the galaxy visuals
 
@@ -154,11 +155,18 @@ Galaxies are **fully procedural** — no image assets. Each milestone's `look` i
 - `arms`, `tightness` — number and winding of the logarithmic spiral arms.
 - `inclination`, `positionAngle` — orientation of the disc on the sky.
 - `core`, `arm`, `knot` (RGB) + `knotFraction` — colour temperature and HII-like knots.
+- `agnStrength` — optional compact active nucleus strength (`0` to `1`).
 
 The same painter feeds both the WebGL textures (`createGalaxyTexture`) and the 2D
 `<canvas>` fallbacks used on mobile and under reduced motion. To use real imagery
 instead, replace the `map` of `MainGalaxy`'s material with a `TextureLoader` texture
 pointing at a local file in `public/` (do not hotlink remote assets).
+
+Clouds follow the true local tangent of each logarithmic arm, with a continuous soft
+ridge, offset dust lanes, young stellar associations and a continuous low-brightness
+inter-arm disc. Their steep stellar-luminosity distribution produces many faint stars and only a few bright
+sources. The four milestones use distinct `4 / 3 / 4 / 3` arm structures; galaxy 03
+hosts the optional unresolved quasar.
 
 Background density, lensing radius and other per-device budgets are set in
 `CosmicJourney.tsx` (`fieldCount`, `lensingRadiusPx`).
@@ -167,10 +175,10 @@ Background density, lensing radius and other per-device budgets are set in
 
 ## How the scroll architecture works
 
-- The journey section is `400vh` tall; inside it a `position: sticky` viewport holds the
-  WebGL canvas and the HTML overlay. CSS does the pinning — GSAP never fights the
-  scrollbar, and when the section ends the scene scrolls away naturally, releasing into
-  the portfolio.
+- The journey section is `400vh` tall; its `position: sticky` viewport holds the HTML
+  overlay while one fixed WebGL canvas sits behind both the journey and the portfolio.
+  CSS does the pinning — GSAP never fights the scrollbar — and there is no background
+  swap when the sections begin.
 - A single ScrollTrigger maps scroll progress (0 → 1) into a shared **mutable store**
   ([`journeyStore.ts`](src/lib/journeyStore.ts)): `stage = progress × 3` is the fractional
   milestone index. Nothing re-renders per frame; the R3F loop and an overlay rAF loop read
@@ -180,17 +188,21 @@ Background density, lensing radius and other per-device budgets are set in
   camera dwells at milestones) and both position and target are exponentially damped, so
   the scrub stays responsive without snapping. The camera genuinely travels — each stage
   has a different position in space, not a zoom level.
-- **GalaxyRoute** builds one Catmull-Rom tube through a lead-in point, the four galaxies
-  and an exit that dives toward the lower page. The fragment shader clips the tube at
-  `uReveal` (eased + damped from the stage), draws a fainter hint segment ahead of it,
-  glows at the drawing head and animates a travelling pulse. At stage 1 only the segment
-  leaving galaxy 01 is visible; each transition draws the next leg.
+- **GalaxyRoute** builds one Catmull-Rom tube from the first galaxy centre, through the
+  four galaxies and into an exit that meets the section index. The fragment shader
+  clips the tube at `uReveal` (eased + damped from the stage), draws a fainter hint
+  segment ahead of it, glows at the drawing head and animates a travelling pulse. At
+  stage 1 only the segment leaving galaxy 01 is visible; each transition draws the next
+  leg.
 - **MilestoneOverlay** keeps all milestone text as real HTML: `ScreenProjector` projects
   each galaxy's world position into screen space every frame, and the overlay moves its
   labels with transforms. Labels fade with a triangular "focus" function of the stage;
   only the active label is interactive (`aria-current="step"`).
-- A scrubbed GSAP timeline handles the hero: it recedes slightly during stage 1, fades
-  fully near the end, and the canvas dims as the pin releases.
+- A scrubbed GSAP timeline handles the hero: it recedes slightly during stage 1 and fades
+  fully near the end. The galaxies and route dissolve at release, while the deep field
+  and cursor lensing remain active behind the portfolio.
+- The opening loader stays above the SSR fallback until the complete WebGL scene has
+  rendered two frames, then fades away without exposing partially painted textures.
 - **Lenis** provides the smooth scrolling, driven from GSAP's ticker and wired to
   `ScrollTrigger.update`, and is disabled under `prefers-reduced-motion`.
 

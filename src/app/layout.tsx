@@ -46,7 +46,15 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const { identity } = await getContent();
+  const { identity, externalLinks } = await getContent();
+  const sameAs = Array.from(
+    new Set([
+      identity.github,
+      ...externalLinks
+        .filter((link) => link.id === 'github' || link.id === 'linkedin')
+        .map((link) => link.href),
+    ]),
+  );
   const personJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Person',
@@ -54,7 +62,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     jobTitle: identity.role,
     email: identity.email,
     url: identity.siteUrl,
-    sameAs: [identity.github],
+    sameAs,
   };
 
   return (

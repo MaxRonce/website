@@ -28,6 +28,8 @@ export type GalaxyLook = {
   knot: RGB;
   /** Fraction of painted sources that become bright HII-like knots. */
   knotFraction: number;
+  /** Optional strength (0–1) of an unresolved active galactic nucleus. */
+  agnStrength?: number;
 };
 
 export type IdentityContent = {

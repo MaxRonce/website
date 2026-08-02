@@ -50,14 +50,14 @@ export type Milestone = Omit<MilestoneContent, 'href'> & { href?: string } & Mil
 const milestoneLayouts: MilestoneLayout[] = [
   {
     worldPosition: [0.5, -2.6, 0],
-    cameraPosition: [-0.2, 0.6, 10],
-    cameraTarget: [1.2, -0.7, -3],
+    cameraPosition: [-0.2, 0.7, 12.4],
+    cameraTarget: [1.2, -1.25, -3],
     baseScale: 5.0,
     labelSide: 'right',
     look: {
       seed: 11,
       arms: 4,
-      tightness: 3.1,
+      tightness: 2.8,
       inclination: 0.62,
       positionAngle: -0.5,
       core: [255, 241, 214],
@@ -72,11 +72,11 @@ const milestoneLayouts: MilestoneLayout[] = [
     cameraPosition: [-0.6, 1.5, -4.5],
     cameraTarget: [2.3, 1.3, -16],
     baseScale: 5.8,
-    labelSide: 'left',
+    labelSide: 'right',
     look: {
       seed: 42,
       arms: 3,
-      tightness: 2.6,
+      tightness: 2.5,
       inclination: 0.72,
       positionAngle: 0.65,
       core: [255, 214, 140],
@@ -94,8 +94,8 @@ const milestoneLayouts: MilestoneLayout[] = [
     labelSide: 'right',
     look: {
       seed: 77,
-      arms: 5,
-      tightness: 3.6,
+      arms: 4,
+      tightness: 3.05,
       inclination: 0.8,
       positionAngle: 1.9,
       core: [235, 244, 255],
@@ -103,6 +103,7 @@ const milestoneLayouts: MilestoneLayout[] = [
       rim: [42, 38, 105],
       knot: [160, 225, 255],
       knotFraction: 0.045,
+      agnStrength: 1,
     },
   },
   {
@@ -113,8 +114,8 @@ const milestoneLayouts: MilestoneLayout[] = [
     labelSide: 'left',
     look: {
       seed: 128,
-      arms: 4,
-      tightness: 2.9,
+      arms: 3,
+      tightness: 2.7,
       inclination: 0.68,
       positionAngle: -1.15,
       core: [255, 235, 205],

@@ -8,6 +8,12 @@
   pointer-events: none;
 }
 
+.arrivalMarker {
+  display: block;
+  height: 0;
+  pointer-events: none;
+}
+
 .list {
   list-style: none;
   display: flex;
@@ -15,17 +21,21 @@
   justify-content: center;
   gap: 2px;
   padding: 5px;
-  border: 1px solid rgba(141, 190, 255, 0.32);
+  border: 1px solid rgba(152, 161, 178, 0.14);
   border-radius: 999px;
-  background: rgba(7, 12, 26, 0.78);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(3, 7, 17, 0.96);
   pointer-events: auto;
-  /* Lit by the route line arriving from the cosmic journey above. */
+  box-shadow: none;
+  transition: border-color 0.45s ease, background 0.45s ease, box-shadow 0.45s ease;
+}
+
+.nav[data-energized='true'] .list {
+  border-color: rgba(141, 190, 255, 0.48);
+  background: rgba(7, 12, 26, 0.97);
   box-shadow:
-    0 0 34px rgba(141, 190, 255, 0.16),
-    0 -10px 28px rgba(141, 190, 255, 0.12),
-    inset 0 0 18px rgba(141, 190, 255, 0.05);
+    0 0 34px rgba(141, 190, 255, 0.2),
+    0 -10px 28px rgba(141, 190, 255, 0.18),
+    inset 0 0 18px rgba(141, 190, 255, 0.08);
 }
 
 .link {
@@ -37,15 +47,27 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   text-decoration: none;
-  color: var(--muted);
+  color: rgba(152, 161, 178, 0.48);
   transition: color 0.2s ease, background 0.2s ease;
 }
 
 .link:hover {
-  color: var(--text);
+  color: rgba(242, 238, 230, 0.74);
 }
 
 .link[aria-current='true'] {
+  color: rgba(152, 161, 178, 0.58);
+}
+
+.nav[data-energized='true'] .link {
+  color: var(--muted);
+}
+
+.nav[data-energized='true'] .link:hover {
+  color: var(--text);
+}
+
+.nav[data-energized='true'] .link[aria-current='true'] {
   color: var(--text);
   background: rgba(141, 190, 255, 0.14);
 }
