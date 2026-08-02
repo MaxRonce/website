@@ -110,25 +110,32 @@ svg {
 
 .portfolio {
   position: relative;
-  z-index: 0;
+  z-index: 1;
 }
 
-/* Star + nebula layer behind the portfolio, thinning out downward. */
+/* Mobile-only fallback; desktop retains the fixed WebGL field continuously. */
 .portfolio-backdrop {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  /* No tint of its own: the fixed cosmic canvas shows through untouched, so
-     the journey and the portfolio share one strictly identical background. */
-  pointer-events: none;
+  display: none;
 }
 
-.portfolio-backdrop svg {
-  display: block;
+@media (max-width: 819px), (pointer: coarse) and (max-width: 1099px) {
+  .portfolio-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    display: block;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .portfolio-backdrop svg {
+    display: block;
+  }
 }
 
 .site-footer {
+  position: relative;
+  z-index: 1;
   padding: 56px clamp(24px, 6vw, 96px) 72px;
   border-top: 1px solid var(--border);
   color: var(--muted);

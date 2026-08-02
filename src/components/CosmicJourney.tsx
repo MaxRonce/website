@@ -3,7 +3,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import dynamic from 'next/dynamic';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import styles from '@/components/styles/journey.module.css';
 import type { Milestone } from '@/content/site';
@@ -55,26 +55,89 @@ export type CosmicJourneyProps = {
 export default function CosmicJourney(props: CosmicJourneyProps) {
   const flags = useMediaFlags();
   const [webglAvailable, setWebglAvailable] = useState<boolean | null>(null);
+  const [experienceReady, setExperienceReady] = useState(false);
+  const loaderStartedAt = useRef(0);
+  const readyTimer = useRef<number | null>(null);
 
-  useEffect(() => {
-    setWebglAvailable(detectWebGL());
+  const revealExperience = useCallback(() => {
+    const elapsed = performance.now() - loaderStartedAt.current;
+    const delay = Math.max(0, 650 - elapsed);
+    if (readyTimer.current !== null) window.clearTimeout(readyTimer.current);
+    readyTimer.current = window.setTimeout(() => setExperienceReady(true), delay);
   }, []);
 
+  useEffect(() => {
+    loaderStartedAt.current = performance.now();
+    setWebglAvailable(detectWebGL());
+    return () => {
+      if (readyTimer.current !== null) window.clearTimeout(readyTimer.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!flags.mounted || webglAvailable === null || (!flags.isMobile && webglAvailable)) return;
+
+    let secondFrame = 0;
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(revealExperience);
+    });
+    return () => {
+      cancelAnimationFrame(firstFrame);
+      cancelAnimationFrame(secondFrame);
+    };
+  }, [flags.isMobile, flags.mounted, revealExperience, webglAvailable]);
+
   if (!flags.mounted || webglAvailable === null) {
-    return <JourneyShellFallback {...props} />;
+    return (
+      <>
+        <JourneyShellFallback {...props} />
+        <UniverseLoader ready={false} />
+      </>
+    );
   }
   // Without WebGL (hardware acceleration off, old GPU…) the vertical journey
   // still shows real galaxies — they are painted with the 2D canvas API.
   if (flags.isMobile || !webglAvailable) {
     return (
-      <MobileJourney
-        identity={props.identity}
-        milestones={props.milestones}
-        redshiftRef={props.redshiftRef}
-      />
+      <>
+        <MobileJourney
+          identity={props.identity}
+          milestones={props.milestones}
+          redshiftRef={props.redshiftRef}
+        />
+        <UniverseLoader ready={experienceReady} />
+      </>
     );
   }
-  return <DesktopJourney {...props} flags={flags} />;
+  return (
+    <>
+      <DesktopJourney
+        {...props}
+        flags={flags}
+        ready={experienceReady}
+        onSceneReady={revealExperience}
+      />
+      <UniverseLoader ready={experienceReady} />
+    </>
+  );
+}
+
+function UniverseLoader({ ready }: { ready: boolean }) {
+  return (
+    <div
+      className={styles.universeLoader}
+      data-ready={ready ? 'true' : 'false'}
+      role="status"
+      aria-live="polite"
+      aria-label={ready ? 'Universe ready' : 'Loading the universe'}
+    >
+      <div className={styles.loaderInner}>
+        <p className={styles.loaderTitle}>Loading the universe</p>
+        <span className={styles.loaderTrack} aria-hidden="true" />
+        <p className={styles.loaderDetail}>Redshifting galaxies...</p>
+      </div>
+    </div>
+  );
 }
 
 /** SSR / pre-hydration markup: crisp hero + sr-only milestone content. */
@@ -108,7 +171,9 @@ function DesktopJourney({
   milestones,
   redshiftRef,
   flags,
-}: CosmicJourneyProps & { flags: MediaFlags }) {
+  ready,
+  onSceneReady,
+}: CosmicJourneyProps & { flags: MediaFlags; ready: boolean; onSceneReady: () => void }) {
   const wrapperRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const stageCount = milestones.length;
@@ -150,26 +215,18 @@ function DesktopJourney({
         .to('[data-hero-block]', { opacity: 0.78, y: -34, duration: 0.2 }, 0.05)
         .to('[data-hero-block]', { opacity: 0, y: -80, duration: 0.15 }, 0.78);
 
-      // The fixed canvas stays as the shared background past the end of the
-      // journey — no seam — and dissolves while scrolling into the portfolio.
-      gsap.fromTo(
-        '[data-canvas-wrap]',
-        { autoAlpha: 1 },
-        {
-          autoAlpha: 0,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: wrapper,
-            start: 'bottom 92%',
-            end: 'bottom -30%',
-            scrub: true,
-            // The galaxies read this to dissolve faster than the star field.
-            onUpdate: (self) => {
-              journey.release = self.progress;
-            },
-          },
+      // Galaxies and the route dissolve as the portfolio arrives. The fixed
+      // deep-field canvas remains untouched so its stars and lensing continue
+      // behind every section without switching backgrounds.
+      ScrollTrigger.create({
+        trigger: wrapper,
+        start: 'bottom 92%',
+        end: 'bottom -30%',
+        scrub: true,
+        onUpdate: (self) => {
+          journey.release = self.progress;
         },
-      );
+      });
     }, wrapper);
 
     return () => {
@@ -182,32 +239,36 @@ function DesktopJourney({
 
   const fieldCount = flags.isTablet ? 1800 : 3400;
   const lensing = !flags.coarsePointer;
-  const lensingRadiusPx = flags.isTablet ? 690 : 990;
+  const lensingRadiusPx = flags.isTablet ? 900 : 1280;
 
   return (
-    <section className={styles.journey} ref={wrapperRef} aria-label="Research journey">
-      <div className={styles.sticky}>
-        <div className={styles.canvasWrap} data-canvas-wrap>
-          <CosmicCanvas
-            fieldCount={fieldCount}
-            lensing={lensing}
-            lensingRadiusPx={lensingRadiusPx}
-          />
-        </div>
-
-        <HeroContent identity={identity} />
-        <MilestoneOverlay
-          milestones={milestones}
-          redshiftRef={redshiftRef}
-          activeIndex={activeIndex}
+    <>
+      <div className={styles.canvasWrap} data-canvas-wrap>
+        <CosmicCanvas
+          fieldCount={fieldCount}
+          lensing={lensing}
+          lensingRadiusPx={lensingRadiusPx}
+          onReady={onSceneReady}
         />
-        <SrMilestoneList milestones={milestones} />
-
-        <p className={styles.scrollHint} data-scroll-hint aria-hidden="true">
-          scroll to explore
-          <span className={styles.scrollHintLine} />
-        </p>
       </div>
-    </section>
+      <section className={styles.journey} ref={wrapperRef} aria-label="Research journey">
+        <div className={styles.sticky}>
+          <HeroContent identity={identity} />
+          <MilestoneOverlay
+            milestones={milestones}
+            redshiftRef={redshiftRef}
+            activeIndex={activeIndex}
+          />
+          <SrMilestoneList milestones={milestones} />
+
+          <p className={styles.scrollHint} data-scroll-hint aria-hidden="true">
+            <span className={styles.scrollHintBody} data-visible={ready ? 'true' : 'false'}>
+              <span>scroll to explore</span>
+              <span className={styles.scrollHintLine} />
+            </span>
+          </p>
+        </div>
+      </section>
+    </>
   );
 }

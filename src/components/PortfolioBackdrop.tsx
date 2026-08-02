@@ -37,10 +37,8 @@ function generateStars(width: number, height: number): Star[] {
 }
 
 /**
- * Background layer of the portfolio: the same kind of unresolved sources as
- * the cosmic journey, continuing behind the sections but thinning out
- * progressively on the way down. Sits behind all content (z-index −1) and
- * carries the section area's soft nebula gradients.
+ * Static star-field fallback for mobile, where the WebGL journey is disabled.
+ * Desktop keeps the original WebGL field and lensing behind the portfolio.
  */
 export function PortfolioBackdrop() {
   const ref = useRef<HTMLDivElement>(null);

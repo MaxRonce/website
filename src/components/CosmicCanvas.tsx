@@ -1,7 +1,7 @@
 'use client';
 
-import { Canvas } from '@react-three/fiber';
-import { useEffect, useState } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useEffect, useRef, useState } from 'react';
 
 import { milestones } from '@/content/site';
 import { journey } from '@/lib/journeyStore';
@@ -20,7 +20,24 @@ export type CosmicCanvasProps = {
   lensing: boolean;
   /** Lensing radius in CSS pixels. */
   lensingRadiusPx: number;
+  /** Called after the complete WebGL scene has rendered two frames. */
+  onReady: () => void;
 };
+
+function SceneReady({ onReady }: { onReady: () => void }) {
+  const frameCount = useRef(0);
+  const reported = useRef(false);
+
+  useFrame(() => {
+    frameCount.current += 1;
+    if (!reported.current && frameCount.current >= 2) {
+      reported.current = true;
+      onReady();
+    }
+  });
+
+  return null;
+}
 
 function detectWebGL(): boolean {
   try {
@@ -36,15 +53,24 @@ function detectWebGL(): boolean {
 }
 
 /**
- * The persistent 3D environment of the cosmic journey. Rendered inside the
- * pinned hero; everything textual stays in real HTML above this canvas.
+ * The persistent 3D environment behind the journey and portfolio. Everything
+ * textual stays in real HTML above this fixed canvas.
  */
-export default function CosmicCanvas({ fieldCount, lensing, lensingRadiusPx }: CosmicCanvasProps) {
+export default function CosmicCanvas({
+  fieldCount,
+  lensing,
+  lensingRadiusPx,
+  onReady,
+}: CosmicCanvasProps) {
   const [webglAvailable, setWebglAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
     setWebglAvailable(detectWebGL());
   }, []);
+
+  useEffect(() => {
+    if (webglAvailable === false) onReady();
+  }, [onReady, webglAvailable]);
 
   // Pointer tracking (fine pointers only) — feeds the lensing pass exclusively;
   // nothing in the scene moves with the mouse.
@@ -81,6 +107,7 @@ export default function CosmicCanvas({ fieldCount, lensing, lensingRadiusPx }: C
       }}
     >
       <VisibilityGuard />
+      <SceneReady onReady={onReady} />
       <CameraRig />
       <ScreenProjector />
       <GalaxyField count={fieldCount} />

@@ -2,6 +2,7 @@
 
 .journey {
   position: relative;
+  z-index: 1;
   height: 400vh;
 }
 
@@ -10,16 +11,86 @@
   top: 0;
   height: 100vh;
   overflow: hidden;
-  background: var(--bg);
+  background: transparent;
 }
 
 .canvasWrap {
-  /* Fixed to the viewport: the cosmic scene IS the page background. It keeps
-     rendering behind the top of the portfolio (so there is no visible seam at
-     the end of the journey) and is faded out by scroll once the sections take
-     over. */
+  /* This sibling sits outside the sticky journey so one WebGL surface remains
+     behind both the cosmic sequence and every portfolio section. */
   position: fixed;
   inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── First-frame loader ────────────────────────────────────────────────── */
+
+.universeLoader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.65s ease, visibility 0s linear 0s;
+}
+
+.universeLoader[data-ready='true'] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.65s ease, visibility 0s linear 0.65s;
+}
+
+.loaderInner {
+  width: min(240px, calc(100vw - 48px));
+  text-align: center;
+}
+
+.loaderTitle {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.loaderTrack {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin: 20px 0 14px;
+  overflow: hidden;
+  background: rgba(152, 161, 178, 0.2);
+}
+
+.loaderTrack::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--route);
+  box-shadow: 0 0 10px rgba(141, 190, 255, 0.7);
+  transform: translateX(-100%);
+  animation: universeLoading 1.45s ease-in-out infinite;
+}
+
+.loaderDetail {
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@keyframes universeLoading {
+  0% {
+    transform: translateX(-100%);
+  }
+  55%,
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* ── Hero HTML layer ───────────────────────────────────────────────────── */
@@ -132,8 +203,12 @@
   position: absolute;
   z-index: 6;
   left: 50%;
-  bottom: 28px;
+  bottom: 34px;
   transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.scrollHintBody {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -142,7 +217,14 @@
   letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--muted);
-  pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+
+.scrollHintBody[data-visible='true'] {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .scrollHintLine {
@@ -175,6 +257,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .loaderTrack::after,
   .scrollHintLine::after {
     animation: none;
   }
@@ -356,7 +439,14 @@
   position: static;
   transform: none;
   margin-top: 56px;
+  display: flex;
+  flex-direction: column;
   align-items: flex-start;
+  gap: 10px;
+  font-size: 0.68rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .mobileList {

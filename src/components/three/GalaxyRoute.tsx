@@ -10,8 +10,9 @@ import { journey } from '@/lib/journeyStore';
 /**
  * The luminous pale-blue route connecting the four milestone galaxies.
  *
- * A Catmull-Rom curve threads a lead-in point, the four galaxy centres and an
- * exit point that dives toward the lower page. The tube's fragment shader
+ * A Catmull-Rom curve starts at the first galaxy centre, threads the remaining
+ * galaxy centres and ends at an exit point that dives toward the lower page.
+ * The tube's fragment shader
  * reveals the line progressively with scroll (`uReveal`), continues a fainter
  * hint segment toward the next destination (`uFaint`), keeps a soft glow at
  * the drawing head and sends a slow pulse of light travelling along the
@@ -35,6 +36,7 @@ const VERTEX = /* glsl */ `
 const FRAGMENT = /* glsl */ `
   uniform float uReveal;
   uniform float uFaint;
+  uniform float uTrailStart;
   uniform float uPulse;
   uniform float uOpacity;
   uniform vec3 uColor;
@@ -46,7 +48,8 @@ const FRAGMENT = /* glsl */ `
   void main() {
     float solid = 1.0 - smoothstep(uReveal - 0.012, uReveal, vU);
     float faint = (1.0 - smoothstep(uFaint - 0.02, uFaint, vU)) * 0.16;
-    float base = max(solid, faint);
+    float trail = smoothstep(uTrailStart, uTrailStart + 0.012, vU);
+    float base = max(solid, faint) * trail;
     if (base <= 0.002) discard;
 
     // Tube centre (normal facing the camera) is brighter than its silhouette.
@@ -55,7 +58,7 @@ const FRAGMENT = /* glsl */ `
 
     float headGlow = exp(-pow((uReveal - vU) * 90.0, 2.0)) * 1.3;
     float pulse = vU < uReveal ? exp(-pow((uPulse - vU) * 120.0, 2.0)) : 0.0;
-    float softStart = smoothstep(0.0, 0.03, vU);
+    float softStart = smoothstep(0.0, 0.008, vU);
 
     float alpha = base * (0.3 + 0.7 * core) * uOpacity * softStart;
     vec3 colour = uColor * (alpha + (headGlow + pulse) * base * 0.8);
@@ -64,21 +67,19 @@ const FRAGMENT = /* glsl */ `
 `;
 
 export function GalaxyRoute() {
-  const reveal = useRef(0.08);
+  const reveal = useRef(0.05);
 
   const { geometry, material, anchors } = useMemo(() => {
     const first = milestones[0].worldPosition;
     // The exit dives straight down through the final camera target's vertical
-    // column: points directly below the look-at target project onto the exact
-    // horizontal centre of the screen (whatever the aspect ratio), so the 3D
-    // line leaves the viewport dead-centre and vertical — perfectly aligned
-    // with the DOM route-continuation line that leads to the section index.
+    // column. Its endpoint projects at 90% of the viewport height, where the
+    // section index meets the route, independently of the viewport aspect.
     const finalTarget = milestones[milestones.length - 1].cameraTarget;
     const points = [
-      new THREE.Vector3(first[0] - 1.4, first[1] - 1.2, first[2] + 0.6),
-      ...milestones.map((m) => new THREE.Vector3(...m.worldPosition)),
-      new THREE.Vector3(finalTarget[0], finalTarget[1] - 3.5, finalTarget[2]),
-      new THREE.Vector3(finalTarget[0], finalTarget[1] - 14, finalTarget[2]),
+      new THREE.Vector3(...first),
+      ...milestones.slice(1).map((m) => new THREE.Vector3(...m.worldPosition)),
+      new THREE.Vector3(finalTarget[0], finalTarget[1] - 2.2, finalTarget[2]),
+      new THREE.Vector3(finalTarget[0], finalTarget[1] - 4.45, finalTarget[2]),
     ];
     const curve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.5);
     const tube = new THREE.TubeGeometry(curve, 380, 0.05, 10, false);
@@ -106,6 +107,7 @@ export function GalaxyRoute() {
       uniforms: {
         uReveal: { value: anchorParams[0] + 0.05 },
         uFaint: { value: anchorParams[0] + 0.2 },
+        uTrailStart: { value: 0 },
         uPulse: { value: 0 },
         uOpacity: { value: 0.85 },
         uColor: { value: new THREE.Color('#8DBEFF') },
@@ -141,6 +143,11 @@ export function GalaxyRoute() {
 
     shader.uniforms.uReveal.value = reveal.current;
     shader.uniforms.uFaint.value = Math.min(1, reveal.current + 0.16);
+    // Retire the travelled route near the last milestone. The previous leg
+    // passes close to the final camera and would otherwise project as a broad
+    // wedge; the useful centre-to-navbar segment remains fully visible.
+    const finalApproach = THREE.MathUtils.smoothstep(stage, 2.55, 3);
+    shader.uniforms.uTrailStart.value = anchors[milestones.length - 1] * finalApproach;
     // Like the galaxies, the route dissolves quickly once the portfolio
     // scrolls over the scene — only the star field lingers.
     shader.uniforms.uOpacity.value = 0.85 * THREE.MathUtils.clamp(1 - journey.release * 4, 0, 1);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { MouseEvent } from 'react';
 
 import styles from '@/components/styles/nav.module.css';
@@ -14,6 +14,47 @@ import { scrollBus } from '@/lib/scrollBus';
  */
 export function SectionNavigation() {
   const [activeId, setActiveId] = useState<string>(sectionIndex[0].id);
+  const navRef = useRef<HTMLElement>(null);
+  const arrivalRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const nav = navRef.current;
+    const arrival = arrivalRef.current;
+    if (!nav || !arrival) return;
+
+    let energized = false;
+    let arrivalY = 0;
+    let frame = 0;
+
+    const update = () => {
+      frame = 0;
+      const enterAt = arrivalY - window.innerHeight * 0.91;
+      const leaveAt = arrivalY - window.innerHeight;
+      const next = energized ? window.scrollY > leaveAt : window.scrollY >= enterAt;
+      if (next === energized) return;
+      energized = next;
+      nav.dataset.energized = energized ? 'true' : 'false';
+    };
+
+    const scheduleUpdate = () => {
+      if (frame === 0) frame = window.requestAnimationFrame(update);
+    };
+
+    const measure = () => {
+      arrivalY = arrival.getBoundingClientRect().top + window.scrollY;
+      scheduleUpdate();
+    };
+
+    measure();
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', measure);
+
+    return () => {
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', measure);
+      if (frame !== 0) window.cancelAnimationFrame(frame);
+    };
+  }, []);
 
   useEffect(() => {
     const sections = sectionIndex
@@ -47,21 +88,29 @@ export function SectionNavigation() {
   };
 
   return (
-    <nav className={styles.nav} aria-label="Portfolio sections">
-      <ul className={styles.list}>
-        {sectionIndex.map(({ id, label }) => (
-          <li key={id}>
-            <a
-              href={`#${id}`}
-              className={styles.link}
-              aria-current={activeId === id ? 'true' : undefined}
-              onClick={(event) => onNavigate(event, id)}
-            >
-              {label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <>
+      <span ref={arrivalRef} className={styles.arrivalMarker} aria-hidden="true" />
+      <nav
+        ref={navRef}
+        className={styles.nav}
+        data-energized="false"
+        aria-label="Portfolio sections"
+      >
+        <ul className={styles.list}>
+          {sectionIndex.map(({ id, label }) => (
+            <li key={id}>
+              <a
+                href={`#${id}`}
+                className={styles.link}
+                aria-current={activeId === id ? 'true' : undefined}
+                onClick={(event) => onNavigate(event, id)}
+              >
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </>
   );
 }
