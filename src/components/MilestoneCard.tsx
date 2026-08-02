@@ -9,25 +9,31 @@ import { RedshiftChip } from '@/components/RedshiftChip';
  */
 export function MilestoneCard({
   milestone,
-  index,
   redshiftRef,
   galaxySize = 220,
 }: {
   milestone: Milestone;
-  index: number;
   redshiftRef: string;
   galaxySize?: number;
 }) {
+  const internalHref = milestone.href?.startsWith('/') ?? false;
+  const linkLabel = milestone.href === '/paper'
+    ? 'Explore paper'
+    : milestone.href === '/cv'
+      ? 'View CV'
+      : 'Open project';
+
   return (
     <article className={styles.card} data-milestone-card>
       <div className={styles.cardGalaxy}>
         <GalaxyCanvasView look={milestone.look} size={galaxySize} />
       </div>
       <div className={styles.cardBody}>
-        <p className={styles.labelNumber}>{String(index + 1).padStart(2, '0')}</p>
-        <h3 className={styles.cardTitle}>{milestone.title}</h3>
         <p className={styles.labelDate}>
           <time dateTime={milestone.date}>{milestone.dateLabel}</time>
+        </p>
+        <h3 className={styles.cardTitle}>{milestone.title}</h3>
+        <p className={styles.labelMeta}>
           <RedshiftChip date={milestone.date} redshiftRef={redshiftRef} />
         </p>
         <p className={styles.cardDescription}>{milestone.description}</p>
@@ -35,10 +41,10 @@ export function MilestoneCard({
           <a
             className={styles.labelLink}
             href={milestone.href}
-            target="_blank"
-            rel="noopener noreferrer"
+            target={internalHref ? undefined : '_blank'}
+            rel={internalHref ? undefined : 'noopener noreferrer'}
           >
-            Learn more
+            {linkLabel}
           </a>
         ) : null}
       </div>

@@ -60,6 +60,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     '@type': 'Person',
     name: identity.fullName,
     jobTitle: identity.role,
+    image: new URL(identity.photo, identity.siteUrl).toString(),
     email: identity.email,
     url: identity.siteUrl,
     sameAs,

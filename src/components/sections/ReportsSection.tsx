@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 import styles from '@/components/styles/sections.module.css';
 import type { Report } from '@/content/site';
 
@@ -12,24 +14,38 @@ export function ReportsSection({ reports }: { reports: Report[] }) {
       </div>
 
       <div className={styles.sectionBody}>
-        <ul className={styles.rowList}>
+        <ul className={styles.reportList}>
           {reports.map((report) => (
-            <li key={report.id} className={styles.row}>
-              <div>
-                <h3 className={styles.rowTitle}>{report.title}</h3>
-                <p className={styles.meta}>
-                  {report.context} · {report.year}
-                </p>
-                <p className={styles.rowExcerpt}>{report.description}</p>
-              </div>
+            <li key={report.id} className={styles.reportCard}>
               <a
-                className={styles.quietLink}
+                className={styles.reportPreview}
                 href={report.href}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={`Read ${report.title}`}
               >
-                Read report
+                <Image
+                  className={styles.reportLogo}
+                  src={report.preview}
+                  alt={report.previewAlt}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 360px"
+                />
               </a>
+              <div className={styles.reportCopy}>
+                <p className={styles.documentKind}>Technical report · {report.year}</p>
+                <h3 className={styles.rowTitle}>{report.title}</h3>
+                <p className={styles.meta}>{report.context}</p>
+                <p className={styles.rowExcerpt}>{report.description}</p>
+                <a
+                  className={styles.quietLink}
+                  href={report.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Read full report
+                </a>
+              </div>
             </li>
           ))}
         </ul>

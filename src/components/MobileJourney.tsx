@@ -98,11 +98,10 @@ export function MobileJourney({
           />
         </svg>
         <ol className={styles.mobileMilestones}>
-          {milestones.map((milestone, index) => (
+          {milestones.map((milestone) => (
             <li key={milestone.id}>
               <MilestoneCard
                 milestone={milestone}
-                index={index}
                 redshiftRef={redshiftRef}
                 galaxySize={200}
               />

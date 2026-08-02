@@ -44,18 +44,22 @@ Requires Node 18.17+ (developed on Node 24).
 ├── .eslintrc.json                 # next/core-web-vitals (+ R3F prop override)
 ├── public/
 │   ├── og.svg                     # Open Graph placeholder — replace with a PNG
+│   ├── images/                    # portrait + paper/poster/report previews
 │   ├── cv-placeholder.pdf         # original placeholder
 │   └── files/                     # portfolio PDFs, PPTX and current CV
 └── src/
     ├── app/
     │   ├── layout.tsx             # fonts, metadata, OG, JSON-LD, skip link
     │   ├── page.tsx               # journey + portfolio sections + footer
+    │   ├── cv/                    # interactive HTML CV + embedded PDF reader
+    │   ├── paper/                 # paper overview, figures, findings and PDF link
     │   ├── globals.css            # palette, focus states, CSS fallback
     │   ├── icon.svg               # favicon
     │   ├── admin/                 # ★ password-protected content editor (no code)
     │   └── api/content/route.ts   # secured read/write API (disk or GitHub commit)
     ├── content/
-    │   ├── content.json           # ★ ALL editable text (edited by /admin)
+    │   ├── content.json           # ★ ALL editable text and preview paths
+    │   ├── cv.ts                  # structured CV timeline and skill groups
     │   ├── types.ts               # shared content types
     │   └── site.ts                # 3D layout (galaxies, camera) + content merge
     ├── lib/
@@ -132,18 +136,22 @@ bigger files can be added to `public/uploads/` in the repo by hand).
 
 ### What is editable
 
-- `identity` — name, role, headline, intro, e-mail, GitHub URL, CV path, site URL.
+- `identity` — name, portrait, role, headline, intro, e-mail, GitHub URL, CV path,
+  site URL.
 - `milestones` — the four cosmic-journey events (title, dates, description, link).
   Their *count* is locked to four: the 3D layout (galaxy positions, camera keyframes,
   galaxy looks) is code-owned in [`src/content/site.ts`](src/content/site.ts).
 - `papers`, `posters`, `slides`, `reports`, `about`, `externalLinks` — the portfolio
-  sections, with add/remove supported in the editor.
+  sections, with add/remove supported in the editor. Paper, poster and report entries
+  accept a preview image and accessible alternative text.
 
 The poetic redshift chips need no configuration: the most recent milestone is the
 "observer" (z ≈ 0) and older events sit at higher z, like real lookback time.
 
 The current CV and research documents are served from `public/files/`; their links are
-defined in `content.json`. The remaining visual placeholder is `og.svg` (ideally swap it
+defined in `content.json`. The CV is also available as an interactive page at `/cv`,
+with structured sections and the original PDF reader. The featured publication has an
+editorial overview at `/paper`, with two figures and a direct PDF link. The remaining visual placeholder is `og.svg` (ideally swap it
 for a 1200×630 PNG and update `openGraph.images` in `src/app/layout.tsx`).
 
 ## Adjusting the galaxy visuals

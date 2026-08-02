@@ -156,9 +156,9 @@ function JourneyShellFallback({ identity, milestones }: CosmicJourneyProps) {
 function SrMilestoneList({ milestones }: { milestones: Milestone[] }) {
   return (
     <ol className="sr-only">
-      {milestones.map((milestone, index) => (
+      {milestones.map((milestone) => (
         <li key={milestone.id}>
-          {String(index + 1).padStart(2, '0')} — {milestone.title} ({milestone.dateLabel}):{' '}
+          {milestone.dateLabel} — {milestone.title}:{' '}
           {milestone.description}
         </li>
       ))}
@@ -210,10 +210,13 @@ function DesktopJourney({
           scrub: true,
         },
       });
+      const timelineClock = { progress: 0 };
       timeline
+        .to(timelineClock, { progress: 1, duration: 1 }, 0)
         .to('[data-scroll-hint]', { opacity: 0, duration: 0.05 }, 0.02)
-        .to('[data-hero-block]', { opacity: 0.78, y: -34, duration: 0.2 }, 0.05)
-        .to('[data-hero-block]', { opacity: 0, y: -80, duration: 0.15 }, 0.78);
+        .to('[data-hero-portrait]', { opacity: 0, scale: 0.9, x: 48, duration: 0.12 }, 0.04)
+        .to('[data-hero-block]', { opacity: 0.7, y: -24, duration: 0.1 }, 0.05)
+        .to('[data-hero-block]', { opacity: 0, y: -64, duration: 0.12 }, 0.15);
 
       // Galaxies and the route dissolve as the portfolio arrives. The fixed
       // deep-field canvas remains untouched so its stars and lensing continue

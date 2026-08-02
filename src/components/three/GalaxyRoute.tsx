@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 import { milestones } from '@/content/site';
+import { createRadialGlowTexture } from '@/lib/galaxyPainter';
 import { journey } from '@/lib/journeyStore';
 
 /**
@@ -56,20 +57,29 @@ const FRAGMENT = /* glsl */ `
     float rim = abs(dot(normalize(vNormalW), normalize(vViewDir)));
     float core = pow(rim, 1.6);
 
-    float headGlow = exp(-pow((uReveal - vU) * 90.0, 2.0)) * 1.3;
+    float headHalo = exp(-pow((uReveal - vU) * 72.0, 2.0));
+    float headCore = exp(-pow((uReveal - vU) * 210.0, 2.0));
     float pulse = vU < uReveal ? exp(-pow((uPulse - vU) * 120.0, 2.0)) : 0.0;
     float softStart = smoothstep(0.0, 0.008, vU);
 
     float alpha = base * (0.3 + 0.7 * core) * uOpacity * softStart;
-    vec3 colour = uColor * (alpha + (headGlow + pulse) * base * 0.8);
-    gl_FragColor = vec4(colour, alpha);
+    float energy = (headHalo * 0.42 + headCore * 1.25 + pulse * 0.48) * base * uOpacity;
+    vec3 hotBlue = mix(uColor, vec3(0.94, 0.985, 1.0), 0.72);
+    vec3 colour = uColor * alpha + hotBlue * energy;
+    gl_FragColor = vec4(colour, max(alpha, energy * 0.36));
   }
 `;
 
 export function GalaxyRoute() {
-  const reveal = useRef(0.05);
+  const reveal = useRef(0);
+  const particleRef = useRef<THREE.Group>(null);
+  const haloMaterialRef = useRef<THREE.SpriteMaterial>(null);
+  const innerMaterialRef = useRef<THREE.SpriteMaterial>(null);
+  const coreMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
+  const particleTexture = useMemo(() => createRadialGlowTexture(), []);
+  const particlePosition = useMemo(() => new THREE.Vector3(), []);
 
-  const { geometry, material, anchors } = useMemo(() => {
+  const { curve, geometry, material, anchors } = useMemo(() => {
     const first = milestones[0].worldPosition;
     // The exit dives straight down through the final camera target's vertical
     // column. Its endpoint projects at 90% of the viewport height, where the
@@ -105,8 +115,8 @@ export function GalaxyRoute() {
       vertexShader: VERTEX,
       fragmentShader: FRAGMENT,
       uniforms: {
-        uReveal: { value: anchorParams[0] + 0.05 },
-        uFaint: { value: anchorParams[0] + 0.2 },
+        uReveal: { value: anchorParams[0] },
+        uFaint: { value: anchorParams[0] + 0.16 },
         uTrailStart: { value: 0 },
         uPulse: { value: 0 },
         uOpacity: { value: 0.85 },
@@ -118,15 +128,16 @@ export function GalaxyRoute() {
       side: THREE.DoubleSide,
     });
 
-    return { geometry: tube, material: shader, anchors: anchorParams };
+    return { curve, geometry: tube, material: shader, anchors: anchorParams };
   }, []);
 
   useEffect(() => {
     return () => {
       geometry.dispose();
       material.dispose();
+      particleTexture.dispose();
     };
-  }, [geometry, material]);
+  }, [geometry, material, particleTexture]);
 
   useFrame((state, delta) => {
     const shader = material;
@@ -136,9 +147,9 @@ export function GalaxyRoute() {
     const eased = f * f * (3 - 2 * f);
     const head = THREE.MathUtils.lerp(anchors[i], anchors[i + 1], eased);
 
-    // Small hint ahead of the head; at the very end, run out toward the page.
-    const tail = THREE.MathUtils.smoothstep(stage, 2.55, 3) * (1 - anchors[milestones.length - 1] - 0.05);
-    const target = Math.min(1, head + 0.05 + tail);
+    // At the very end the particle leaves the final galaxy toward the navbar.
+    const tail = THREE.MathUtils.smoothstep(stage, 2.55, 3) * (1 - anchors[milestones.length - 1]);
+    const target = Math.min(1, head + tail);
     reveal.current = THREE.MathUtils.damp(reveal.current, target, 5, delta);
 
     shader.uniforms.uReveal.value = reveal.current;
@@ -154,7 +165,69 @@ export function GalaxyRoute() {
     shader.uniforms.uPulse.value = (state.clock.elapsedTime * 0.11) % 1 > reveal.current
       ? -1
       : (state.clock.elapsedTime * 0.11) % 1;
+
+    curve.getPointAt(Math.min(1, reveal.current), particlePosition);
+    journey.routeHead.x = particlePosition.x;
+    journey.routeHead.y = particlePosition.y;
+    journey.routeHead.z = particlePosition.z;
+
+    const particle = particleRef.current;
+    const haloMaterial = haloMaterialRef.current;
+    const innerMaterial = innerMaterialRef.current;
+    const coreMaterial = coreMaterialRef.current;
+    if (particle && haloMaterial && innerMaterial && coreMaterial) {
+      particle.position.copy(particlePosition);
+      const breathe = 1 + Math.sin(state.clock.elapsedTime * 4.2) * 0.07;
+      particle.scale.setScalar(breathe);
+      const particleOpacity = THREE.MathUtils.clamp(1 - journey.release * 4, 0, 1);
+      haloMaterial.opacity = 0.3 * particleOpacity;
+      innerMaterial.opacity = 0.68 * particleOpacity;
+      coreMaterial.opacity = 0.96 * particleOpacity;
+      particle.visible = particleOpacity > 0.01;
+    }
   });
 
-  return <mesh geometry={geometry} material={material} frustumCulled={false} />;
+  return (
+    <>
+      <mesh geometry={geometry} material={material} frustumCulled={false} />
+      <group ref={particleRef}>
+        <sprite scale={[0.5, 0.5, 1]}>
+          <spriteMaterial
+            ref={haloMaterialRef}
+            map={particleTexture}
+            color="#62aaff"
+            transparent
+            opacity={0.3}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+            toneMapped={false}
+          />
+        </sprite>
+        <sprite scale={[0.2, 0.2, 1]}>
+          <spriteMaterial
+            ref={innerMaterialRef}
+            map={particleTexture}
+            color="#b9e1ff"
+            transparent
+            opacity={0.68}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+            toneMapped={false}
+          />
+        </sprite>
+        <mesh>
+          <sphereGeometry args={[0.035, 12, 12]} />
+          <meshBasicMaterial
+            ref={coreMaterialRef}
+            color="#f5fbff"
+            transparent
+            opacity={0.96}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+            toneMapped={false}
+          />
+        </mesh>
+      </group>
+    </>
+  );
 }

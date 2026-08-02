@@ -25,6 +25,7 @@ const LABELS: Record<string, string> = {
   identity: 'Identité',
   name: 'Nom affiché',
   fullName: 'Nom complet',
+  photo: 'Portrait (chemin ou URL)',
   role: 'Rôle (sous le nom)',
   headline: 'Titre principal de la page',
   intro: "Texte d'introduction",
@@ -44,6 +45,8 @@ const LABELS: Record<string, string> = {
   venue: 'Revue / conférence',
   year: 'Année',
   abstract: 'Résumé',
+  preview: "Image d'aperçu (chemin ou URL)",
+  previewAlt: "Description accessible de l'aperçu",
   links: 'Liens',
   label: 'Libellé',
   featured: 'Mis en avant (encadré « Featured »)',
@@ -63,7 +66,7 @@ const LABELS: Record<string, string> = {
 
 const TEXTAREA_KEYS = new Set(['intro', 'description', 'abstract']);
 /** Link fields that get a "Téléverser…" button (PDF de poster, CV, etc.). */
-const UPLOAD_KEYS = new Set(['href', 'cvHref']);
+const UPLOAD_KEYS = new Set(['href', 'cvHref', 'photo', 'preview']);
 const UPLOAD_ACCEPT = '.pdf,.png,.jpg,.jpeg,.webp,.svg';
 /** Sections whose item count is locked (the 3D journey has exactly 4 stages). */
 const FIXED_LENGTH_KEYS = new Set(['milestones']);

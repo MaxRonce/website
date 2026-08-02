@@ -7,7 +7,7 @@ import * as THREE from 'three';
 
 import type { Milestone } from '@/content/site';
 import { milestones } from '@/content/site';
-import { createGalaxyTexture, mulberry32 } from '@/lib/galaxyPainter';
+import { createGalaxyTexture, createRadialGlowTexture, mulberry32 } from '@/lib/galaxyPainter';
 import { journey, milestoneFocus } from '@/lib/journeyStore';
 
 /**
@@ -21,9 +21,16 @@ export function MainGalaxy({ milestone, index }: { milestone: Milestone; index: 
   const scaleRef = useRef<THREE.Group>(null);
   const materialRef = useRef<THREE.MeshBasicMaterial>(null);
   const haloMaterialRef = useRef<THREE.PointsMaterial>(null);
+  const coreGlowRef = useRef<THREE.Sprite>(null);
+  const coreGlowMaterialRef = useRef<THREE.SpriteMaterial>(null);
   const currentScale = useRef(1);
 
   const texture = useMemo(() => createGalaxyTexture(milestone.look), [milestone.look]);
+  const coreGlowTexture = useMemo(() => createRadialGlowTexture(96, 1.8), []);
+  const coreGlowColor = useMemo(() => {
+    const [r, g, b] = milestone.look.core;
+    return new THREE.Color(r / 255, g / 255, b / 255).lerp(new THREE.Color('#d9efff'), 0.28);
+  }, [milestone.look.core]);
 
   const halo = useMemo(() => {
     const rand = mulberry32(milestone.look.seed * 7 + 3);
@@ -44,16 +51,19 @@ export function MainGalaxy({ milestone, index }: { milestone: Milestone; index: 
   useEffect(() => {
     return () => {
       texture.dispose();
+      coreGlowTexture.dispose();
       halo.dispose();
     };
-  }, [texture, halo]);
+  }, [texture, coreGlowTexture, halo]);
 
   useFrame((_, delta) => {
     const inner = innerRef.current;
     const wrapper = scaleRef.current;
     const material = materialRef.current;
     const haloMaterial = haloMaterialRef.current;
-    if (!inner || !wrapper || !material || !haloMaterial) return;
+    const coreGlow = coreGlowRef.current;
+    const coreGlowMaterial = coreGlowMaterialRef.current;
+    if (!inner || !wrapper || !material || !haloMaterial || !coreGlow || !coreGlowMaterial) return;
 
     inner.rotation.z += delta * 0.02 * (index % 2 === 0 ? 1 : -1);
 
@@ -74,6 +84,15 @@ export function MainGalaxy({ milestone, index }: { milestone: Milestone; index: 
     }
     material.opacity = (0.45 + 0.55 * focus) * releaseFade;
     haloMaterial.opacity = (0.12 + 0.35 * focus) * releaseFade;
+
+    const dx = journey.routeHead.x - milestone.worldPosition[0];
+    const dy = journey.routeHead.y - milestone.worldPosition[1];
+    const dz = journey.routeHead.z - milestone.worldPosition[2];
+    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const impact = 1 - THREE.MathUtils.smoothstep(distance, 0.08, 0.9);
+    const glowSize = 0.17 + impact * 0.13;
+    coreGlow.scale.set(glowSize, glowSize, 1);
+    coreGlowMaterial.opacity = (0.025 + impact * 0.82) * releaseFade;
   });
 
   return (
@@ -90,6 +109,18 @@ export function MainGalaxy({ milestone, index }: { milestone: Milestone; index: 
             toneMapped={false}
           />
         </mesh>
+        <sprite ref={coreGlowRef} scale={[0.17, 0.17, 1]}>
+          <spriteMaterial
+            ref={coreGlowMaterialRef}
+            map={coreGlowTexture}
+            color={coreGlowColor}
+            transparent
+            opacity={0.025}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+            toneMapped={false}
+          />
+        </sprite>
         <points geometry={halo} scale={[0.5, 0.5, 0.5]}>
           <pointsMaterial
             ref={haloMaterialRef}

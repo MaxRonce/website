@@ -4,6 +4,7 @@
   --muted: #98a1b2;
   --route: #8dbeff;
   --accent: #b6a2ff;
+  --milestone: #e2b784;
   --panel: rgba(13, 20, 38, 0.55);
   --border: rgba(152, 161, 178, 0.16);
   --border-strong: rgba(152, 161, 178, 0.3);
@@ -111,6 +112,7 @@ svg {
 .portfolio {
   position: relative;
   z-index: 1;
+  overflow-x: clip;
 }
 
 /* Mobile-only fallback; desktop retains the fixed WebGL field continuously. */

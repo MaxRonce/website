@@ -24,6 +24,8 @@ export type JourneyState = {
   release: number;
   /** Pointer position in canvas UV space (origin bottom-left), for the lens. */
   pointerUv: { x: number; y: number };
+  /** World-space position of the luminous route particle. */
+  routeHead: { x: number; y: number; z: number };
   /** Projected screen-space anchors for the milestone labels. */
   screen: ScreenAnchor[];
 };
@@ -33,6 +35,11 @@ export const journey: JourneyState = {
   stage: 0,
   release: 0,
   pointerUv: { x: 0.5, y: 0.5 },
+  routeHead: {
+    x: milestones[0].worldPosition[0],
+    y: milestones[0].worldPosition[1],
+    z: milestones[0].worldPosition[2],
+  },
   screen: milestones.map(() => ({ x: -9999, y: -9999, visible: false, focus: 0 })),
 };
 

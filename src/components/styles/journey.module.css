@@ -95,33 +95,80 @@
 
 /* ── Hero HTML layer ───────────────────────────────────────────────────── */
 
-.brand {
+.portrait {
   position: absolute;
-  top: clamp(24px, 4vh, 44px);
-  left: clamp(24px, 6vw, 96px);
   z-index: 6;
+  top: 54px;
+  right: clamp(24px, 5vw, 84px);
+  width: 320px;
+  aspect-ratio: 1;
+  pointer-events: none;
+  transform-origin: 60% 45%;
+  will-change: opacity, transform;
 }
 
-.brandName {
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 1.5rem;
-  letter-spacing: 0.01em;
+.portrait::before,
+.portrait::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 22px;
+  left: 16px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(242, 238, 230, 0.9);
+  box-shadow:
+    34px 8px rgba(141, 190, 255, 0.8),
+    82px -18px rgba(242, 238, 230, 0.75),
+    148px 10px rgba(226, 183, 132, 0.8),
+    225px -2px rgba(182, 162, 255, 0.72),
+    278px 42px rgba(242, 238, 230, 0.7),
+    8px 92px rgba(226, 183, 132, 0.68),
+    286px 126px rgba(141, 190, 255, 0.7),
+    20px 214px rgba(182, 162, 255, 0.65),
+    274px 248px rgba(242, 238, 230, 0.75),
+    64px 282px rgba(141, 190, 255, 0.66),
+    214px 292px rgba(226, 183, 132, 0.72);
+  filter: drop-shadow(0 0 3px rgba(141, 190, 255, 0.72));
+  animation: portraitTwinkle 4.8s ease-in-out infinite alternate;
 }
 
-.brandName::after {
-  content: '✦';
-  font-size: 0.6em;
-  color: var(--accent);
-  margin-left: 6px;
-  vertical-align: super;
+.portrait::after {
+  top: 4px;
+  left: 2px;
+  width: 1px;
+  height: 1px;
+  opacity: 0.7;
+  box-shadow:
+    58px 54px rgba(242, 238, 230, 0.7),
+    122px 24px rgba(141, 190, 255, 0.72),
+    198px 62px rgba(242, 238, 230, 0.65),
+    304px 82px rgba(226, 183, 132, 0.7),
+    18px 152px rgba(242, 238, 230, 0.62),
+    296px 192px rgba(182, 162, 255, 0.68),
+    42px 250px rgba(141, 190, 255, 0.62),
+    158px 310px rgba(242, 238, 230, 0.68),
+    250px 276px rgba(226, 183, 132, 0.65);
+  filter: drop-shadow(0 0 2px rgba(226, 183, 132, 0.65));
+  animation-duration: 6.2s;
 }
 
-.brandRole {
-  margin-top: 2px;
-  font-size: 0.68rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--muted);
+.portrait img {
+  z-index: 1;
+  object-fit: contain;
+  filter: contrast(1.06) saturate(0.92);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);
+}
+
+@keyframes portraitTwinkle {
+  from {
+    opacity: 0.48;
+  }
+  to {
+    opacity: 0.95;
+  }
 }
 
 .heroBlock {
@@ -130,7 +177,7 @@
   left: clamp(24px, 6vw, 96px);
   top: 50%;
   transform: translateY(-56%);
-  max-width: 560px;
+  max-width: 720px;
   pointer-events: none;
 }
 
@@ -141,15 +188,29 @@
 .headline {
   font-family: var(--font-serif), Georgia, serif;
   font-weight: 500;
-  font-size: clamp(2.6rem, 5.4vw, 4.7rem);
-  line-height: 1.08;
-  letter-spacing: 0.005em;
+  font-size: 4.9rem;
+  line-height: 0.98;
+  letter-spacing: 0;
   text-wrap: balance;
+  text-shadow: 0 0 32px rgba(3, 7, 17, 0.94);
+}
+
+.headline strong {
+  font-weight: 600;
+}
+
+.heroRole {
+  margin-top: 18px;
+  color: var(--text);
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
 }
 
 .intro {
-  margin-top: 24px;
-  max-width: 400px;
+  margin-top: 18px;
+  max-width: 460px;
   color: var(--muted);
   font-size: clamp(0.95rem, 1.1vw, 1.05rem);
 }
@@ -300,7 +361,7 @@
   margin-right: 18px;
   width: 74px;
   height: 1px;
-  background: linear-gradient(to left, rgba(242, 238, 230, 0.55), transparent);
+  background: linear-gradient(to left, rgba(226, 183, 132, 0.68), transparent);
 }
 
 /* Label to the left of its galaxy: mirrored. */
@@ -317,49 +378,46 @@
   margin-left: 18px;
   width: 74px;
   height: 1px;
-  background: linear-gradient(to right, rgba(242, 238, 230, 0.55), transparent);
-}
-
-.label[data-side='left'] .labelNumber::after {
-  margin-left: auto;
+  background: linear-gradient(to right, rgba(226, 183, 132, 0.68), transparent);
 }
 
 .label[data-side='left'] .labelDate {
   justify-content: flex-end;
 }
 
-.labelNumber {
-  font-size: 0.95rem;
-  letter-spacing: 0.08em;
-  color: var(--text);
-}
-
-.labelNumber::after {
-  content: '';
-  display: block;
-  width: 22px;
-  height: 1px;
-  margin-top: 8px;
-  background: rgba(242, 238, 230, 0.4);
-}
-
-.labelTitle {
-  margin-top: 10px;
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 500;
-  font-size: 1.55rem;
-  line-height: 1.15;
+.label[data-side='left'] .labelMeta {
+  justify-content: flex-end;
 }
 
 .labelDate {
-  margin-top: 6px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 0.68rem;
-  letter-spacing: 0.2em;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--milestone);
+}
+
+.labelDate time {
+  display: inline-block;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(226, 183, 132, 0.5);
+}
+
+.labelTitle {
+  margin-top: 12px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 500;
+  font-size: 1.68rem;
+  line-height: 1.15;
+}
+
+.labelMeta {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
 }
 
 .labelDescription {
@@ -367,6 +425,7 @@
   font-size: 0.82rem;
   color: var(--muted);
   max-width: 260px;
+  line-height: 1.55;
 }
 
 .labelLink {
@@ -376,14 +435,18 @@
   font-size: 0.72rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--route);
+  color: var(--milestone);
   text-decoration: none;
-  border-bottom: 1px solid rgba(141, 190, 255, 0.4);
+  border-bottom: 1px solid rgba(226, 183, 132, 0.45);
   padding-bottom: 2px;
 }
 
 .labelLink:hover {
-  border-bottom-color: var(--route);
+  border-bottom-color: var(--milestone);
+}
+
+.labelLink::after {
+  content: ' ↗';
 }
 
 /* ── Redshift chip & tooltip ───────────────────────────────────────────── */
@@ -392,14 +455,16 @@
   display: inline-flex;
   align-items: baseline;
   gap: 1px;
-  padding: 3px 9px;
-  border: 1px solid var(--border);
+  padding: 4px 9px 5px;
+  border: 1px solid rgba(239, 91, 104, 0.52);
   border-radius: 999px;
-  background: var(--panel);
-  font-size: 0.66rem;
+  background: rgba(116, 24, 39, 0.34);
+  box-shadow: inset 0 0 12px rgba(239, 91, 104, 0.08);
+  font-size: 0.64rem;
+  line-height: 1;
   letter-spacing: 0.06em;
   text-transform: none;
-  color: var(--accent);
+  color: #ffadb5;
 }
 
 .redshiftChip sup {
@@ -423,10 +488,10 @@
   justify-content: center;
 }
 
-.mobileHero .brand {
-  position: absolute;
-  top: 28px;
-  left: 24px;
+.mobileHero .portrait {
+  top: 68px;
+  right: 2px;
+  width: 148px;
 }
 
 .mobileHero .heroBlock {
@@ -525,6 +590,40 @@
   position: static;
   transform: none;
   pointer-events: auto;
+}
+
+@media (max-width: 540px) {
+  .headline {
+    max-width: 340px;
+    font-size: 2.55rem;
+  }
+
+  .heroRole {
+    max-width: 260px;
+    font-size: 0.62rem;
+    line-height: 1.6;
+  }
+
+  .heroActions {
+    gap: 10px;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    padding: 11px 17px;
+    font-size: 0.68rem;
+  }
+}
+
+@media (min-width: 541px) and (max-width: 1040px) {
+  .headline {
+    max-width: 600px;
+    font-size: 3.7rem;
+  }
+
+  .portrait {
+    width: 260px;
+  }
 }
 
 .staticGridWrap {
