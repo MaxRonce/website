@@ -114,31 +114,35 @@ const milestoneLayouts: MilestoneLayout[] = [
     labelSide: 'left',
     look: {
       seed: 128,
-      arms: 3,
-      tightness: 2.7,
-      inclination: 0.68,
+      arms: 5,
+      tightness: 2.95,
+      inclination: 0.72,
       positionAngle: -1.15,
-      core: [255, 235, 205],
-      arm: [216, 130, 190],
-      rim: [40, 40, 105],
-      knot: [180, 160, 255],
-      knotFraction: 0.04,
+      core: [255, 228, 245],
+      arm: [202, 103, 226],
+      rim: [60, 29, 126],
+      knot: [226, 177, 255],
+      knotFraction: 0.065,
+      density: 1.32,
     },
   },
 ];
 
 /**
- * Merges editable milestone text with the code-owned 3D layout, by array
- * order. The journey always shows exactly as many milestones as there are
- * layouts (four): extra JSON entries are ignored, so /admin edits cannot
- * break the 3D choreography.
+ * Merges editable milestone text with the code-owned 3D layout, newest first.
+ * The journey always shows exactly as many milestones as there are layouts
+ * (four): extra JSON entries are ignored, so /admin edits cannot break the 3D
+ * choreography.
  */
 export function buildMilestones(entries: MilestoneContent[]): Milestone[] {
-  return entries.slice(0, milestoneLayouts.length).map((milestone, index) => ({
-    ...milestone,
-    href: milestone.href === '' ? undefined : milestone.href,
-    ...milestoneLayouts[index],
-  }));
+  return [...entries]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, milestoneLayouts.length)
+    .map((milestone, index) => ({
+      ...milestone,
+      href: milestone.href === '' ? undefined : milestone.href,
+      ...milestoneLayouts[index],
+    }));
 }
 
 /**

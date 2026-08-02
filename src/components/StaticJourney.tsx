@@ -41,11 +41,10 @@ export function StaticJourney({
           />
         </svg>
         <ol className={styles.staticGrid}>
-          {milestones.map((milestone, index) => (
+          {milestones.map((milestone) => (
             <li key={milestone.id}>
               <MilestoneCard
                 milestone={milestone}
-                index={index}
                 redshiftRef={redshiftRef}
                 galaxySize={180}
               />

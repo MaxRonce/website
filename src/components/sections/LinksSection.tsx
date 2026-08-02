@@ -34,9 +34,8 @@ export function LinksSection({
               <em>Code, pipelines & experiments</em>
             </span>
           </a>
-          <a className={styles.cvButton} href={identity.cvHref} download>
-            Download CV
-          </a>
+          <a className={styles.cvButton} href="/cv">View interactive CV</a>
+          <a className={styles.cvButton} href={identity.cvHref} download>Download PDF</a>
         </div>
 
         <ul className={styles.externalGrid}>

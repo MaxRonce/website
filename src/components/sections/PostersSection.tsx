@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 import styles from '@/components/styles/sections.module.css';
 import type { Poster } from '@/content/site';
 
@@ -19,21 +21,35 @@ export function PostersSection({ posters }: { posters: Poster[] }) {
               className={styles.posterCard}
               data-reveal-side={index % 2 === 0 ? 'left' : 'right'}
             >
-              <div className={styles.posterThumb} aria-hidden="true">
-                <span>{String(index + 1).padStart(2, '0')}</span>
-              </div>
-              <h3 className={styles.rowTitle}>{poster.title}</h3>
-              <p className={styles.meta}>
-                {poster.event} · {poster.year}
-              </p>
               <a
-                className={styles.quietLink}
+                className={styles.posterThumb}
                 href={poster.href}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={`Open ${poster.title}`}
               >
-                Download poster
+                <Image
+                  src={poster.preview}
+                  alt={poster.previewAlt}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 360px"
+                />
+                <span>{String(index + 1).padStart(2, '0')}</span>
               </a>
+              <div className={styles.posterCopy}>
+                <p className={styles.documentKind}>Poster · {poster.year}</p>
+                <h3 className={styles.rowTitle}>{poster.title}</h3>
+                <p className={styles.meta}>{poster.event}</p>
+                <p className={styles.rowExcerpt}>{poster.description}</p>
+                <a
+                  className={styles.quietLink}
+                  href={poster.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open full poster
+                </a>
+              </div>
             </li>
           ))}
         </ul>

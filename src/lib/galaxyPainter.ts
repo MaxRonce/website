@@ -26,6 +26,28 @@ function mixRgb(a: RGB, b: RGB, t: number): RGB {
   ];
 }
 
+/** Small additive radial texture shared by route particles and core flashes. */
+export function createRadialGlowTexture(size = 64, power = 2.2): THREE.DataTexture {
+  const data = new Uint8Array(size * size * 4);
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const dx = (x + 0.5) / size * 2 - 1;
+      const dy = (y + 0.5) / size * 2 - 1;
+      const falloff = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy));
+      const offset = (y * size + x) * 4;
+      data[offset] = 255;
+      data[offset + 1] = 255;
+      data[offset + 2] = 255;
+      data[offset + 3] = Math.round(Math.pow(falloff, power) * 255);
+    }
+  }
+  const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.needsUpdate = true;
+  return texture;
+}
+
 /**
  * Paints a procedural galaxy in a dense, painterly "nebula" style, after the
  * user's references: a fully filled disc of saturated colour — blazing
@@ -45,6 +67,9 @@ export function paintGalaxy(
   const maxR = c * 0.88;
   const detailed = size >= 512;
   const px = size / 512;
+  const density = Math.max(0.7, Math.min(1.5, look.density ?? 1));
+  const count = (detailedCount: number, compactCount: number) =>
+    Math.round((detailed ? detailedCount : compactCount) * density);
 
   const armStep = (Math.PI * 2) / look.arms;
   const swirlAt = (radius: number) => look.tightness * Math.log(1 + radius / (maxR * 0.1));
@@ -134,8 +159,8 @@ export function paintGalaxy(
   // A continuous exponential-like disc fills the inter-arm regions while its
   // low surface brightness keeps the spiral ridges distinguishable.
   const discWash = ctx.createRadialGradient(0, 0, 0, 0, 0, maxR * 1.03);
-  discWash.addColorStop(0, rgba(look.core, 0.2));
-  discWash.addColorStop(0.26, rgba(mixRgb(look.core, look.arm, 0.55), 0.135));
+  discWash.addColorStop(0, rgba(look.core, 0.16));
+  discWash.addColorStop(0.26, rgba(mixRgb(look.core, look.arm, 0.55), 0.115));
   discWash.addColorStop(0.68, rgba(mixRgb(look.arm, look.rim, 0.55), 0.085));
   discWash.addColorStop(0.9, rgba(look.rim, 0.045));
   discWash.addColorStop(1, rgba(look.rim, 0));
@@ -146,7 +171,7 @@ export function paintGalaxy(
 
   // Low-contrast clouds are distributed over the whole disc, not only on the
   // spiral loci. This removes empty black wedges without flattening the arms.
-  const discCloudCount = detailed ? 230 : 92;
+  const discCloudCount = count(230, 92);
   for (let i = 0; i < discCloudCount; i += 1) {
     const frac = 0.06 + Math.sqrt(rand()) * 0.94;
     const theta = rand() * Math.PI * 2;
@@ -164,7 +189,7 @@ export function paintGalaxy(
 
   // 1 — deep rim wash: broad dark-navy masses defining the outskirts,
   // extending past maxR for an irregular, blotchy silhouette.
-  const rimCount = detailed ? 160 : 70;
+  const rimCount = count(160, 70);
   for (let i = 0; i < rimCount; i += 1) {
     const frac = 0.45 + rand() * 0.62;
     const p = armSample(frac);
@@ -179,7 +204,7 @@ export function paintGalaxy(
     );
   }
   // Detached outer clumps breaking the ellipse edge.
-  const clumpCount = detailed ? 13 : 6;
+  const clumpCount = count(13, 6);
   for (let i = 0; i < clumpCount; i += 1) {
     const frac = 0.85 + rand() * 0.35;
     const p = armSample(frac);
@@ -198,7 +223,7 @@ export function paintGalaxy(
 
   // 2 — coherent arm ridges. These continuous, gently feathered backbones
   // keep the spiral structure legible beneath the more painterly cloud layers.
-  const ridgeSteps = detailed ? 44 : 23;
+  const ridgeSteps = count(44, 23);
   for (let arm = 0; arm < look.arms; arm += 1) {
     const armBrightness = 0.82 + rand() * 0.28;
     for (let step = 0; step < ridgeSteps; step += 1) {
@@ -218,7 +243,7 @@ export function paintGalaxy(
   }
 
   // 3 — mid-disc clouds: the dominant hue, filling and feathering the arms.
-  const midCount = detailed ? 270 : 115;
+  const midCount = count(270, 115);
   for (let i = 0; i < midCount; i += 1) {
     const frac = 0.14 + rand() * 0.68;
     const p = armSample(frac);
@@ -234,7 +259,7 @@ export function paintGalaxy(
   }
 
   // 4 — warm inner clouds swirling into the core.
-  const warmCount = detailed ? 140 : 60;
+  const warmCount = count(140, 60);
   for (let i = 0; i < warmCount; i += 1) {
     const frac = 0.03 + rand() * 0.32;
     const p = armSample(frac);
@@ -251,7 +276,7 @@ export function paintGalaxy(
 
   // An older, diffuse stellar population follows the disc rather than the
   // arms. These mostly faint sources give the galaxy a continuous body.
-  const discStarCount = detailed ? 4300 : 1450;
+  const discStarCount = count(4300, 1450);
   for (let i = 0; i < discStarCount; i += 1) {
     const frac = 0.035 + Math.sqrt(rand()) * 0.94;
     const theta = rand() * Math.PI * 2;
@@ -291,7 +316,7 @@ export function paintGalaxy(
 
   // 6 — resolved stellar populations. The steep luminosity distribution makes
   // most stars faint, with only a small high-mass tail producing visible glints.
-  const starCount = detailed ? 8200 : 2800;
+  const starCount = count(8200, 2800);
   for (let i = 0; i < starCount; i += 1) {
     const frac = Math.min(1.12, 0.02 + 1.05 * Math.pow(rand(), 0.62));
     const p = armSample(frac, 0.72 + rand() * 0.36);
@@ -315,7 +340,7 @@ export function paintGalaxy(
   }
 
   // Young stellar associations trace short, clumpy sections inside the arms.
-  const associationCount = detailed ? 120 : 46;
+  const associationCount = count(120, 46);
   for (let i = 0; i < associationCount; i += 1) {
     const frac = 0.14 + Math.pow(rand(), 0.78) * 0.78;
     const p = armSample(frac, 0.38);
@@ -351,7 +376,7 @@ export function paintGalaxy(
   }
 
   // Rare bright stars sit above the unresolved population.
-  const sparkCount = detailed ? 72 : 28;
+  const sparkCount = count(72, 28);
   for (let i = 0; i < sparkCount; i += 1) {
     const frac = 0.05 + rand() * 0.9;
     const p = armSample(frac, 0.72);
@@ -364,7 +389,7 @@ export function paintGalaxy(
   }
 
   // 7 — glowing accent knots.
-  const knotCount = Math.max(4, Math.round((detailed ? 420 : 170) * look.knotFraction));
+  const knotCount = Math.max(4, Math.round(count(420, 170) * look.knotFraction));
   for (let i = 0; i < knotCount; i += 1) {
     const frac = 0.25 + rand() * 0.6;
     const p = armSample(frac);
@@ -387,9 +412,9 @@ export function paintGalaxy(
   ctx.scale(1.3, 1);
   ctx.globalCompositeOperation = 'screen';
   const coreGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, maxR * 0.38);
-  coreGlow.addColorStop(0, rgba(look.core, 0.66));
-  coreGlow.addColorStop(0.18, rgba(look.core, 0.48));
-  coreGlow.addColorStop(0.48, rgba(mixRgb(look.core, look.arm, 0.48), 0.2));
+  coreGlow.addColorStop(0, rgba(look.core, 0.5));
+  coreGlow.addColorStop(0.18, rgba(look.core, 0.36));
+  coreGlow.addColorStop(0.48, rgba(mixRgb(look.core, look.arm, 0.48), 0.15));
   coreGlow.addColorStop(1, rgba(look.arm, 0));
   ctx.fillStyle = coreGlow;
   ctx.beginPath();
@@ -398,9 +423,9 @@ export function paintGalaxy(
 
   const hotCoreRadius = maxR * (agnStrength > 0 ? 0.082 : 0.115);
   const hotCore = ctx.createRadialGradient(0, 0, 0, 0, 0, hotCoreRadius);
-  hotCore.addColorStop(0, rgba(mixRgb(look.core, [255, 255, 255], 0.9), 1));
-  hotCore.addColorStop(0.22, rgba(mixRgb(look.core, [255, 255, 255], 0.65), 0.82));
-  hotCore.addColorStop(0.62, rgba(mixRgb(look.core, look.arm, 0.2), 0.34));
+  hotCore.addColorStop(0, rgba(mixRgb(look.core, [255, 255, 255], 0.9), 0.8));
+  hotCore.addColorStop(0.22, rgba(mixRgb(look.core, [255, 255, 255], 0.65), 0.62));
+  hotCore.addColorStop(0.62, rgba(mixRgb(look.core, look.arm, 0.2), 0.24));
   hotCore.addColorStop(1, rgba(look.core, 0));
   ctx.fillStyle = hotCore;
   ctx.beginPath();

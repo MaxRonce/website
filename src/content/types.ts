@@ -28,6 +28,8 @@ export type GalaxyLook = {
   knot: RGB;
   /** Fraction of painted sources that become bright HII-like knots. */
   knotFraction: number;
+  /** Optional multiplier for clouds and stellar populations. */
+  density?: number;
   /** Optional strength (0–1) of an unresolved active galactic nucleus. */
   agnStrength?: number;
 };
@@ -35,6 +37,7 @@ export type GalaxyLook = {
 export type IdentityContent = {
   name: string;
   fullName: string;
+  photo: string;
   role: string;
   headline: string;
   intro: string;
@@ -64,6 +67,8 @@ export type PaperContent = {
   venue: string;
   year: number;
   abstract: string;
+  preview: string;
+  previewAlt: string;
   links: { label: string; href: string }[];
   featured: boolean;
 };
@@ -73,6 +78,9 @@ export type PosterContent = {
   title: string;
   event: string;
   year: number;
+  description: string;
+  preview: string;
+  previewAlt: string;
   href: string;
 };
 
@@ -81,6 +89,8 @@ export type SlideContent = {
   title: string;
   event: string;
   date: string;
+  preview: string;
+  previewAlt: string;
   href: string;
 };
 
@@ -90,6 +100,8 @@ export type ReportContent = {
   context: string;
   year: number;
   description: string;
+  preview: string;
+  previewAlt: string;
   href: string;
 };
 

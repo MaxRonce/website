@@ -1,10 +1,11 @@
 {
   "identity": {
-    "name": "Maxime Ronceray",
+    "name": "Maxime RONCERAY",
     "fullName": "Maxime Ronceray",
-    "role": "Astrophysics · Data Science",
-    "headline": "PhD student at CEA",
-    "intro": "I develop machine-learning and statistical-inference methods for large astronomical surveys, from multimodal anomaly discovery to galaxy population modelling.",
+    "photo": "/images/maxime-ronceray-cutout.png",
+    "role": "Astrophysics - Data Science",
+    "headline": "Maxime RONCERAY",
+    "intro": "I build machine-learning tools to find unusual galaxies and infer their physical properties from large astronomical surveys.",
     "email": "ronceray.maxime@gmail.com",
     "github": "https://github.com/MaxRonce",
     "cvHref": "/files/CV_Maxime_RONCERAY.pdf",
@@ -12,40 +13,40 @@
   },
   "milestones": [
     {
+      "id": "phd-cea",
+      "title": "PhD in astrophysics at CEA",
+      "shortTitle": "Astrophysics PhD",
+      "date": "2026-11-01",
+      "dateLabel": "Nov 2026 – 2029",
+      "description": "Probabilistic machine learning for galaxy surveys and next-generation cosmology.",
+      "href": "https://www.cea.fr/"
+    },
+    {
+      "id": "cea-internship",
+      "title": "Galaxy population inference at CEA",
+      "shortTitle": "Galaxy inference",
+      "date": "2026-03-01",
+      "dateLabel": "Mar 2026 – Sep 2026",
+      "description": "Learning galaxy-population priors and fast physical posteriors with differentiable models and variational inference.",
+      "href": "/files/Euclid_DSPS.pdf"
+    },
+    {
+      "id": "foundation-model-anomalies",
+      "title": "Foundation model for anomaly detection",
+      "shortTitle": "Anomaly detection",
+      "date": "2025-09-01",
+      "dateLabel": "Sep 2025 – Apr 2026",
+      "description": "Benchmarking AstroPT, AstroCLIP and AION to discover rare objects in matched Euclid images and DESI spectra.",
+      "href": "/paper"
+    },
+    {
       "id": "m1-m2-data-science",
       "title": "MSc Data Science & AI",
       "shortTitle": "MSc DS & AI",
       "date": "2024-09-01",
       "dateLabel": "Sep 2024 – Sep 2026",
-      "description": "Master of Science in Data Science and Artificial Intelligence at the University of Tours, with a focus on machine learning, deep learning, statistics and data engineering.",
-      "href": "/files/CV_Maxime_RONCERAY.pdf"
-    },
-    {
-      "id": "foundation-model-anomalies",
-      "title": "Foundation models for discovery",
-      "shortTitle": "Anomalies",
-      "date": "2025-09-01",
-      "dateLabel": "Sep 2025 – Apr 2026",
-      "description": "Research project with IAC Deep benchmarking AstroPT, AstroCLIP and AION embeddings for unsupervised anomaly discovery in matched Euclid–DESI data.",
-      "href": "/files/57_Benchmarking_foundation_mod.pdf"
-    },
-    {
-      "id": "cea-internship",
-      "title": "Research internship at CEA",
-      "shortTitle": "CEA",
-      "date": "2026-03-01",
-      "dateLabel": "Mar 2026 – Sep 2026",
-      "description": "Variational inference for data-driven galaxy population priors, combining differentiable stellar-population synthesis, amortized posteriors and reweighted wake-sleep.",
-      "href": "/files/Euclid_DSPS.pdf"
-    },
-    {
-      "id": "phd-cea",
-      "title": "PhD at CEA",
-      "shortTitle": "PhD",
-      "date": "2026-11-01",
-      "dateLabel": "Nov 2026 – 2029",
-      "description": "PhD research at the intersection of astrophysics, probabilistic inference and machine learning for next-generation galaxy surveys.",
-      "href": "https://www.cea.fr/"
+      "description": "MSc in Data Science and AI, focused on machine learning, statistics and scientific computing.",
+      "href": "/cv"
     }
   ],
   "papers": [
@@ -56,6 +57,8 @@
       "venue": "ICLR 2026 Workshop on Foundation Models for Science (FM4Science)",
       "year": 2026,
       "abstract": "We compare AstroPT, AstroCLIP and AION representations for unsupervised discovery in matched Euclid imaging and DESI spectroscopy. A scalable density-estimation pipeline combines per-modality rarity with cross-modal misalignment to reveal model-dependent rankings, instrumental artefacts and physically coherent candidates including AGN and strong gravitational lenses.",
+      "preview": "/images/research/foundation-model-anomalies.jpg",
+      "previewAlt": "Euclid galaxy cutouts paired with DESI spectra for four anomaly candidates",
       "links": [
         {
           "label": "PDF",
@@ -79,6 +82,9 @@
       "title": "Variational Inference for Data-Driven Galaxy Population Priors",
       "event": "CEA · Université Paris-Saclay",
       "year": 2026,
+      "description": "A differentiable inference pipeline that jointly learns a galaxy-population prior and fast per-galaxy posteriors from catalogue photometry using DSPS and reweighted wake-sleep.",
+      "preview": "/images/research/poster-galaxy-priors.jpg",
+      "previewAlt": "Poster presenting the architecture and preliminary results for data-driven galaxy population priors",
       "href": "/files/Euclid_DSPS.pdf"
     },
     {
@@ -86,6 +92,9 @@
       "title": "Anomaly Detection in the Euclid Q1 Data Release using Foundation Model Embeddings",
       "event": "Data Science Day · University of Tours",
       "year": 2025,
+      "description": "An anomaly-ranking study across AstroPT, AION and AstroCLIP embeddings, combining Euclid images with DESI spectra to surface rare systems and instrumental artefacts.",
+      "preview": "/images/research/poster-euclid-anomalies.jpg",
+      "previewAlt": "Poster about anomaly detection in Euclid Q1 with foundation-model embeddings",
       "href": "/files/Poster_RONCERAY_Print_version.pdf"
     }
   ],
@@ -95,6 +104,8 @@
       "title": "Benchmarking Foundation Models for Unsupervised Discovery in Large Multimodal Astrophysical Datasets",
       "event": "Research talk · Blois",
       "date": "12 Feb 2026",
+      "preview": "/images/research/foundation-model-latent-space.jpg",
+      "previewAlt": "Latent-space map and nearest-neighbour examples from the foundation-model benchmark",
       "href": "/files/IaS_Talk_Benchmarking.pptx"
     },
     {
@@ -102,6 +113,8 @@
       "title": "Anomaly Detection on Euclid Q1 using Foundation Model Embeddings",
       "event": "University of Tours",
       "date": "18 Nov 2025",
+      "preview": "/images/research/slides-euclid-anomalies.jpg",
+      "previewAlt": "Opening slide of the Euclid foundation-model anomaly-detection presentation",
       "href": "/files/AnomaliesEuclid.pdf"
     },
     {
@@ -109,6 +122,8 @@
       "title": "Development of a Simulation Environment for Space Magnetic Sensors: PLASMAG",
       "event": "Café Spatial · LPP / CNRS",
       "date": "5 Jul 2024",
+      "preview": "/images/research/slides-plasmag.jpg",
+      "previewAlt": "Opening slide of the PLASMAG space magnetic-sensor simulation presentation",
       "href": "/files/SLIDES_LPP_cafe_spatial-1.pdf"
     }
   ],
@@ -119,6 +134,8 @@
       "context": "LPP · CNRS / École Polytechnique internship",
       "year": 2024,
       "description": "Design and implementation of PLASMAG, a modular simulation environment for search-coil magnetometers, including a dependency-driven simulation engine, SPICE integration and sensor-parameter optimization.",
+      "preview": "/images/research/plasmag-logo.png",
+      "previewAlt": "PLASMAG logo: Python library for accurate search-coil magnetometer adjustments with a graphical interface",
       "href": "/files/STAGE_LPP_v2.pdf"
     }
   ],

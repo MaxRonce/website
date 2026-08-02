@@ -56,6 +56,12 @@ export function MilestoneOverlay({
     <ol className={styles.overlay} aria-label="Research milestones">
       {milestones.map((milestone, index) => {
         const isActive = index === activeIndex;
+        const internalHref = milestone.href?.startsWith('/') ?? false;
+        const linkLabel = milestone.href === '/paper'
+          ? 'Explore paper'
+          : milestone.href === '/cv'
+            ? 'View CV'
+            : 'Open project';
         return (
           <li
             key={milestone.id}
@@ -68,10 +74,11 @@ export function MilestoneOverlay({
             aria-current={isActive ? 'step' : undefined}
           >
             <div className={styles.labelInner}>
-              <p className={styles.labelNumber}>{String(index + 1).padStart(2, '0')}</p>
-              <h2 className={styles.labelTitle}>{milestone.title}</h2>
               <p className={styles.labelDate}>
                 <time dateTime={milestone.date}>{milestone.dateLabel}</time>
+              </p>
+              <h2 className={styles.labelTitle}>{milestone.title}</h2>
+              <p className={styles.labelMeta}>
                 <RedshiftChip date={milestone.date} redshiftRef={redshiftRef} />
               </p>
               <p className={styles.labelDescription}>{milestone.description}</p>
@@ -79,11 +86,11 @@ export function MilestoneOverlay({
                 <a
                   className={styles.labelLink}
                   href={milestone.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target={internalHref ? undefined : '_blank'}
+                  rel={internalHref ? undefined : 'noopener noreferrer'}
                   tabIndex={isActive ? 0 : -1}
                 >
-                  Learn more
+                  {linkLabel}
                 </a>
               ) : null}
             </div>

@@ -56,10 +56,46 @@
 /* ── Featured paper ────────────────────────────────────────────────────── */
 
 .featured {
-  padding: clamp(24px, 3vw, 40px);
+  overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 8px;
   background: var(--panel);
+}
+
+.researchMedia {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  background: #f5f3ed;
+}
+
+.researchImage {
+  object-fit: cover;
+  transition: transform 0.45s ease;
+}
+
+.researchMedia:hover .researchImage {
+  transform: scale(1.015);
+}
+
+.mediaLabel {
+  position: absolute;
+  left: 18px;
+  bottom: 16px;
+  padding: 7px 10px;
+  border-left: 2px solid var(--route);
+  background: rgba(3, 7, 17, 0.88);
+  color: var(--text);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.featuredCopy {
+  padding: clamp(24px, 3vw, 40px);
 }
 
 .featuredTag {
@@ -75,6 +111,10 @@
   font-weight: 500;
   font-size: clamp(1.4rem, 2.2vw, 1.85rem);
   line-height: 1.25;
+}
+
+.featuredTitle a {
+  text-decoration: none;
 }
 
 .abstract {
@@ -99,6 +139,21 @@
   gap: 24px;
   padding: 24px 0;
   border-top: 1px solid var(--border);
+}
+
+.rowPreview {
+  position: relative;
+  width: 150px;
+  aspect-ratio: 4 / 3;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #f5f3ed;
+}
+
+.rowPreview img {
+  object-fit: cover;
 }
 
 .rowList .row:first-child {
@@ -160,7 +215,9 @@
 }
 
 .quietLink {
+  display: inline-block;
   flex-shrink: 0;
+  margin-top: 18px;
   font-size: 0.74rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -174,42 +231,171 @@
   border-bottom-color: var(--route);
 }
 
+.slideRow {
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.slidePreview {
+  position: relative;
+  width: clamp(180px, 27vw, 240px);
+  aspect-ratio: 16 / 9;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #050914;
+}
+
+.slidePreview img {
+  object-fit: cover;
+  transition: transform 0.45s ease, filter 0.25s ease;
+}
+
+.slidePreview:hover img {
+  transform: scale(1.025);
+  filter: brightness(1.08);
+}
+
+.slideCopy {
+  min-width: 0;
+}
+
 /* ── Posters ───────────────────────────────────────────────────────────── */
 
 .cardGrid {
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
 
 .posterCard {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 20px;
+  display: grid;
+  grid-template-columns: minmax(220px, 42%) minmax(0, 1fr);
+  overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--panel);
 }
 
 .posterThumb {
-  aspect-ratio: 4 / 3;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background:
-    radial-gradient(ellipse 60% 45% at 30% 70%, rgba(141, 190, 255, 0.14), transparent 70%),
-    radial-gradient(ellipse 45% 35% at 75% 25%, rgba(182, 162, 255, 0.12), transparent 70%),
-    rgba(7, 12, 26, 0.6);
-  display: flex;
-  align-items: flex-end;
-  padding: 12px;
+  position: relative;
+  display: block;
+  min-height: 100%;
+  overflow: hidden;
+  border-right: 1px solid var(--border);
+  background: #f5f3ed;
+}
+
+.posterThumb img {
+  object-fit: contain;
+  object-position: top;
+  transition: transform 0.45s ease;
+}
+
+.posterThumb:hover img {
+  transform: scale(1.02);
 }
 
 .posterThumb span {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  padding: 4px 8px;
+  background: rgba(3, 7, 17, 0.88);
   font-family: var(--font-serif), Georgia, serif;
   font-size: 1.3rem;
-  color: var(--muted);
+  color: var(--text);
+}
+
+.posterCopy {
+  align-self: center;
+  padding: clamp(24px, 4vw, 42px);
+}
+
+.documentKind {
+  margin-bottom: 8px;
+  color: var(--accent);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .slideRow,
+  .posterCard {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .slidePreview {
+    width: 100%;
+  }
+
+  .posterThumb {
+    min-height: 0;
+    aspect-ratio: 4 / 5;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+/* ── Reports ───────────────────────────────────────────────────────────── */
+
+.reportList {
+  list-style: none;
+}
+
+.reportCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.reportPreview {
+  position: relative;
+  min-height: auto;
+  aspect-ratio: 16 / 6;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  background: #f5f3ed;
+}
+
+.reportPreview img {
+  object-fit: cover;
+  transition: transform 0.45s ease;
+}
+
+.reportPreview .reportLogo {
+  object-fit: contain;
+  padding: clamp(20px, 3vw, 36px) clamp(32px, 5vw, 64px);
+  background: #f7f5ef;
+}
+
+.reportPreview:hover img {
+  transform: scale(1.02);
+}
+
+.reportCopy {
+  align-self: center;
+  padding: clamp(24px, 3vw, 36px);
+}
+
+@media (max-width: 640px) {
+  .reportCard {
+    grid-template-columns: 1fr;
+  }
+
+  .reportPreview {
+    aspect-ratio: 16 / 7;
+    border-right: none;
+  }
 }
 
 /* ── About ─────────────────────────────────────────────────────────────── */
@@ -273,7 +459,7 @@
   align-items: center;
   gap: 16px;
   padding: 20px 32px;
-  border-radius: 14px;
+  border-radius: 8px;
   background: var(--text);
   color: #0a0f1e;
   text-decoration: none;
@@ -305,7 +491,7 @@
   align-items: center;
   padding: 20px 28px;
   border: 1px solid var(--border-strong);
-  border-radius: 14px;
+  border-radius: 8px;
   color: var(--text);
   background: var(--panel);
   font-size: 0.82rem;
