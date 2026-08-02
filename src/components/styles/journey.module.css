@@ -179,6 +179,7 @@
   transform: translateY(-56%);
   max-width: 720px;
   pointer-events: none;
+  will-change: top, opacity, transform;
 }
 
 .heroBlock a {
@@ -193,6 +194,7 @@
   letter-spacing: 0;
   text-wrap: balance;
   text-shadow: 0 0 32px rgba(3, 7, 17, 0.94);
+  will-change: transform;
 }
 
 .headline strong {

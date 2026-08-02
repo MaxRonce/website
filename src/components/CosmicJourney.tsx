@@ -198,9 +198,8 @@ function DesktopJourney({
         },
       });
 
-      // Scrubbed HTML choreography: the hero recedes without vanishing, hints
-      // disappear early, and the whole scene breathes out at the very end so
-      // the release into the portfolio feels continuous.
+      // The identity itself travels from the opening composition into a small
+      // top-left signature. Supporting copy and portrait clear the stage first.
       const timeline = gsap.timeline({
         defaults: { ease: 'none' },
         scrollTrigger: {
@@ -211,12 +210,15 @@ function DesktopJourney({
         },
       });
       const timelineClock = { progress: 0 };
+      gsap.set('[data-hero-name]', { transformOrigin: 'left top' });
       timeline
         .to(timelineClock, { progress: 1, duration: 1 }, 0)
         .to('[data-scroll-hint]', { opacity: 0, duration: 0.05 }, 0.02)
         .to('[data-hero-portrait]', { opacity: 0, scale: 0.9, x: 48, duration: 0.12 }, 0.04)
-        .to('[data-hero-block]', { opacity: 0.7, y: -24, duration: 0.1 }, 0.05)
-        .to('[data-hero-block]', { opacity: 0, y: -64, duration: 0.12 }, 0.15);
+        .to('[data-hero-details]', { opacity: 0, y: -18, duration: 0.1 }, 0.035)
+        .to('[data-hero-block]', { top: 24, y: 0, duration: 0.22 }, 0.035)
+        .to('[data-hero-name]', { scale: 0.36, duration: 0.22 }, 0.035)
+        .to('[data-hero-block]', { opacity: 0, duration: 0.055 }, 0.945);
 
       // Galaxies and the route dissolve as the portfolio arrives. The fixed
       // deep-field canvas remains untouched so its stars and lensing continue
