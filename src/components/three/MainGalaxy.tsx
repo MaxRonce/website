@@ -23,14 +23,22 @@ export function MainGalaxy({ milestone, index }: { milestone: Milestone; index: 
   const haloMaterialRef = useRef<THREE.PointsMaterial>(null);
   const coreGlowRef = useRef<THREE.Sprite>(null);
   const coreGlowMaterialRef = useRef<THREE.SpriteMaterial>(null);
+  const outerGlowRef = useRef<THREE.Sprite>(null);
+  const outerGlowMaterialRef = useRef<THREE.SpriteMaterial>(null);
+  const illuminationRef = useRef(0);
   const currentScale = useRef(1);
 
   const texture = useMemo(() => createGalaxyTexture(milestone.look), [milestone.look]);
   const coreGlowTexture = useMemo(() => createRadialGlowTexture(96, 1.8), []);
+  const outerGlowTexture = useMemo(() => createRadialGlowTexture(128, 1.15), []);
   const coreGlowColor = useMemo(() => {
     const [r, g, b] = milestone.look.core;
     return new THREE.Color(r / 255, g / 255, b / 255).lerp(new THREE.Color('#d9efff'), 0.28);
   }, [milestone.look.core]);
+  const outerGlowColor = useMemo(() => {
+    const [r, g, b] = milestone.look.arm;
+    return new THREE.Color(r / 255, g / 255, b / 255).lerp(new THREE.Color('#8dbeff'), 0.16);
+  }, [milestone.look.arm]);
 
   const halo = useMemo(() => {
     const rand = mulberry32(milestone.look.seed * 7 + 3);
@@ -52,18 +60,24 @@ export function MainGalaxy({ milestone, index }: { milestone: Milestone; index: 
     return () => {
       texture.dispose();
       coreGlowTexture.dispose();
+      outerGlowTexture.dispose();
       halo.dispose();
     };
-  }, [texture, coreGlowTexture, halo]);
+  }, [texture, coreGlowTexture, outerGlowTexture, halo]);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const inner = innerRef.current;
     const wrapper = scaleRef.current;
     const material = materialRef.current;
     const haloMaterial = haloMaterialRef.current;
     const coreGlow = coreGlowRef.current;
     const coreGlowMaterial = coreGlowMaterialRef.current;
-    if (!inner || !wrapper || !material || !haloMaterial || !coreGlow || !coreGlowMaterial) return;
+    const outerGlow = outerGlowRef.current;
+    const outerGlowMaterial = outerGlowMaterialRef.current;
+    if (
+      !inner || !wrapper || !material || !haloMaterial || !coreGlow || !coreGlowMaterial ||
+      !outerGlow || !outerGlowMaterial
+    ) return;
 
     inner.rotation.z += delta * 0.02 * (index % 2 === 0 ? 1 : -1);
 
@@ -82,22 +96,49 @@ export function MainGalaxy({ milestone, index }: { milestone: Milestone; index: 
     if (isLast) {
       releaseFade *= 1 - 0.5 * THREE.MathUtils.smoothstep(journey.progress, 0.9, 1);
     }
-    material.opacity = (0.45 + 0.55 * focus) * releaseFade;
-    haloMaterial.opacity = (0.12 + 0.35 * focus) * releaseFade;
-
     const dx = journey.routeHead.x - milestone.worldPosition[0];
     const dy = journey.routeHead.y - milestone.worldPosition[1];
     const dz = journey.routeHead.z - milestone.worldPosition[2];
     const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    const impact = 1 - THREE.MathUtils.smoothstep(distance, 0.08, 0.9);
-    const glowSize = 0.17 + impact * 0.13;
+    const impact = 1 - THREE.MathUtils.smoothstep(distance, 0.06, 0.62);
+    const illuminationTarget = Math.pow(impact, 0.72);
+    const illuminationSpeed = illuminationTarget > illuminationRef.current ? 13 : 0.45;
+    illuminationRef.current = THREE.MathUtils.damp(
+      illuminationRef.current,
+      illuminationTarget,
+      illuminationSpeed,
+      delta,
+    );
+
+    const illumination = illuminationRef.current;
+    const shimmer = 0.96 + Math.sin(state.clock.elapsedTime * 2.8 + index * 1.7) * 0.04;
+    material.opacity = (0.43 + 0.5 * focus + 0.38 * illumination) * releaseFade;
+    haloMaterial.opacity = (0.1 + 0.3 * focus + 0.5 * illumination) * releaseFade;
+    haloMaterial.size = 0.014 + 0.009 * illumination;
+
+    const glowSize = (0.16 + illumination * 0.27) * shimmer;
     coreGlow.scale.set(glowSize, glowSize, 1);
-    coreGlowMaterial.opacity = (0.025 + impact * 0.82) * releaseFade;
+    coreGlowMaterial.opacity = (0.018 + illumination * 0.94) * releaseFade;
+    const outerGlowSize = (0.36 + illumination * 0.48) * shimmer;
+    outerGlow.scale.set(outerGlowSize, outerGlowSize, 1);
+    outerGlowMaterial.opacity = illumination * 0.2 * releaseFade;
   });
 
   return (
     <Billboard position={milestone.worldPosition} follow>
       <group ref={scaleRef}>
+        <sprite ref={outerGlowRef} scale={[0.36, 0.36, 1]}>
+          <spriteMaterial
+            ref={outerGlowMaterialRef}
+            map={outerGlowTexture}
+            color={outerGlowColor}
+            transparent
+            opacity={0}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+            toneMapped={false}
+          />
+        </sprite>
         <mesh ref={innerRef}>
           <planeGeometry args={[1, 1]} />
           <meshBasicMaterial
